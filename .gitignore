@@ -1,0 +1,14 @@
+*.o
+*.su
+*.img
+*.bin
+*.hex
+*.elf
+*.a
+*~
+*.dump
+*.list
+*.symbols
+
+tags
+a.out
