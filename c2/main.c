@@ -239,18 +239,11 @@ int test_tmp(int argc, char *argv[]);
 
 int main(int argc, char *argv[])
 {
-	int s;
-
 //	test_opt(argc, argv);
 //	loop_arg(argc, argv);
 //	test_ioe(argc, argv);
 //	test_env(argc, argv);
 	test_tmp(argc, argv);
 
-	s = func_add2(1,2);
-	printf("s = %d\n", s);
-
-	s = func_add3(1,2,3);
-	printf("s = %d\n", s);
 	return 0;
 }
