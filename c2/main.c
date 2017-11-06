@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <getopt.h>
 #include <unistd.h>
+#include <abc.h>
 
 static const struct option long_options[] = {
 	{ "help",	0, NULL, 'h' },
@@ -21,6 +22,10 @@ static void print_usage(FILE *stream, int exit_code)
 			" -v --verbose		Print verbose messages.\n");
 	exit(exit_code);
 }
+
+/*
+ * test_opt - example for getting option parameters.
+ */
 
 int test_opt(int argc, char *argv[])
 {
@@ -62,6 +67,10 @@ int test_opt(int argc, char *argv[])
 	return 0;
 }
 
+/*
+ * test_arg - example for showing arguments of main.
+ */
+
 int loop_arg(int argc, char *argv[])
 {
 	int i;
@@ -80,6 +89,12 @@ int loop_arg(int argc, char *argv[])
 	return 0;
 }
 
+/*
+ * test_ioe - demo to show distinction of stderr and stdout.
+ * the stdout is buffered but stderr is not. the stdout will
+ * output data to console until it is buffered. The '\n' character
+ * can tells stdout to output data to console.
+ */
 
 int test_ioe(int argc, char *argv[])
 {
@@ -125,6 +140,10 @@ int test_ioe(int argc, char *argv[])
 	return 0;
 }
 
+/*
+ * test_env - demo to get/set environment varibles
+ */
+
 int test_env(int argc, char *argv[])
 {
 	const char *penv, *pval;
@@ -153,18 +172,85 @@ int test_env(int argc, char *argv[])
 	return 0;
 }
 
+int test_tmp(int argc, char *argv[])
+{
+	char tf_name[] = "/tmp/temp_file123.XXXXXX";
+	unsigned char src[] = {0x31,0x32,0x33,0x34,0x35};
+	unsigned char dst[] = {0,0,0,0,0};
+	int ret, fd, i, len, linked;
+
+	// create a temporary file
+	fd = mkstemp(tf_name);
+	if (fd < 0) {
+		printf("create tmpfile %s failed, %d\n", tf_name, fd);
+		return -1;
+	}
+	printf("create tmpfile %s okay, %d\n", tf_name, fd);
+
+#if 1
+	//unlink temp file
+	unlink(tf_name);
+	linked = 0;
+#else
+	linked = 1;
+#endif
+
+	len = sizeof(src) * 1;
+
+	// write data to file
+	ret = write(fd, (const void *)src, len);
+	if (ret < 0) {
+		printf("write data to file failed\n");
+		return -1;
+	}
+	printf("write %d bytes to file done\n", len);
+
+	// set file postion
+	ret = lseek(fd, 0, SEEK_SET);
+	printf("new file pos = %d\n", ret);
+
+	// read data from file
+	ret = read(fd, (void *)dst, len);
+	if (ret <= 0) {
+		printf("read data from file failed %d\n", ret);
+		return -1;
+	}
+
+	printf("read %d bytes from file:\n", len);
+	for(i = 0;i < len; i++)
+		printf("dst[%d] = %2x\n", i, dst[i]);
+
+	// remove file manullay
+	if (linked) {
+		printf("please remove temp file %s\n", tf_name);
+	}
+
+	// close file
+	close(fd);
+
+	return 0;
+}
 
 int test_opt(int argc, char *argv[]);
 int loop_arg(int argc, char *argv[]);
 int test_ioe(int argc, char *argv[]);
 int test_env(int argc, char *argv[]);
+int test_tmp(int argc, char *argv[]);
 
 int main(int argc, char *argv[])
 {
+	int s;
+
 //	test_opt(argc, argv);
 //	loop_arg(argc, argv);
 //	test_ioe(argc, argv);
-	test_env(argc, argv);
+//	test_env(argc, argv);
+	test_tmp(argc, argv);
 
+	s = func_add2(1,2);
+	printf("s = %d\n", s);
+
+	s = func_add3(1,2,3);
+	printf("s = %d\n", s);
 	return 0;
 }
