@@ -5,6 +5,7 @@
 *.hex
 *.elf
 *.a
+*.so
 *~
 *.dump
 *.list
