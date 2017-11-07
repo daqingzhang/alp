@@ -4,7 +4,7 @@
 int func_add3(int a, int b, int c)
 {
 #ifdef DEBUG
-	printf("a = %d, b = %d, c = %d\n", a, b, c);
+	printf("%s, a = %d, b = %d, c = %d\n", __func__, a, b, c);
 #endif
 	return (a+b+c);
 }
