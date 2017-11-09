@@ -8,6 +8,7 @@ struct th_data {
 	pthread_t id;
 	int cmd;
 	int cnt;
+	pthread_mutex_t mutex;
 };
 
 void *thread_deadloop(void *data)
@@ -34,12 +35,14 @@ void *thread_consumer(void *data)
 
 	while(!stop) {
 		sleep(1);
+		pthread_mutex_lock(&pd->mutex);
 		cmd = pd->cmd;
 		printf("%s, cmd=%d, %d\n", __func__, cmd, pd->cnt);
 
 		pd->cnt--;
 		if (!pd->cnt)
 			stop = 1;
+		pthread_mutex_unlock(&pd->mutex);
 	}
 	printf("%s, stoped\n", __func__);
 //	return NULL;
@@ -70,6 +73,12 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
+	/*
+	 * The default mutex is a fast kind. This means if a thread locks
+	 * a mutex twice without unlock it before the locking, the thread
+	 * will go into deadlock status. This kink of mutex is not recurisive.
+	 */
+	pthread_mutex_init(&ptd->mutex, NULL);
 	ptd->id  = 0;
 	ptd->cnt = 10;
 	ptd->cmd = 1;
@@ -82,7 +91,6 @@ int main(int argc, char *argv[])
 	}
 
 	pthread_attr_init(attr);
-
 	r = pthread_create(&ptd->id, attr, thread_consumer, (void *)ptd);
 	if (r) {
 		printf("create thread failed %d\n", r);

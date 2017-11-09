@@ -1,13 +1,13 @@
 CC	:= gcc
 INCS	:= include
 TOPDIR	:= ./
-CFLAGS	:= -I$(INCS) -L$(TOPDIR) -O2 -DDEBUG -g -Wall --static
+CFLAGS	:= -I$(INCS) -L$(TOPDIR) -O2 -DDEBUG -g -Wall -Werror
 
 APP	:= main
 COBJS	:= main.o
 
 all: $(APP)
-	@echo "Build $(APP) sucess !"
+	@echo "Build $(APP) success !"
 
 $(APP): $(COBJS)
 	$(CC) $(CFLAGS) -o $@ $^ -lpthread
