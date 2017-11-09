@@ -12,4 +12,5 @@
 *.symbols
 
 tags
+main
 a.out
