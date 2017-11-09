@@ -12,22 +12,22 @@ struct th_data {
 	int stop;
 	pthread_mutex_t mutex;
 	sem_t sem;
+	int slot[2];
 };
 
 void *thread_consumer_a(void *data)
 {
 	struct th_data *pd = data;
 	volatile int stop = 0;
-	pthread_t ptid;
 
 	printf("%s, process id=%d\n", __func__, (int)getpid());
-	ptid = pthread_self();
 
 	stop = pd->stop;
 	while(!stop) {
 		sem_wait(&pd->sem);
-		printf("%s, thread %d take 1 sema\n", __func__, (int)ptid);
+		printf("%s, take a sem\n", __func__);
 		stop = pd->stop;
+		usleep(pd->slot[0]);
 	}
 	printf("%s, stoped\n", __func__);
 	return NULL;
@@ -37,33 +37,40 @@ void *thread_consumer_b(void *data)
 {
 	struct th_data *pd = data;
 	volatile int stop = 0;
-	pthread_t ptid;
 
 	printf("%s, process id=%d\n", __func__, (int)getpid());
-	ptid = pthread_self();
 
 	stop = pd->stop;
 	while(!stop) {
 		sem_wait(&pd->sem);
-		printf("%s, thread %d take 1 sema\n", __func__, (int)ptid);
+		printf("%s, take a sem\n", __func__);
 		stop = pd->stop;
+		usleep(pd->slot[0]);
 	}
 	printf("%s, stoped\n", __func__);
 	return NULL;
 }
 
-void *thread_producer(void *data)
+static void gen_thread_slot(struct th_data *td)
+{
+#define THREAD_MAX_SLOT 50
+
+	td->slot[0] = rand() % THREAD_MAX_SLOT;
+	td->slot[1] = rand() % THREAD_MAX_SLOT;
+}
+
+void *thread_producer_c(void *data)
 {
 	struct th_data *pd = data;
 	volatile int stop = 0;
-	pthread_t ptid;
 
 	printf("%s, process id=%d\n", __func__, (int)getpid());
-	ptid = pthread_self();
 
 	stop = pd->stop;
 	while(!stop) {
-		printf("%s, thread %d post 1 sema\n", __func__, (int)ptid);
+		sleep(1);
+		gen_thread_slot(pd);
+		printf("%s, post a sem\n", __func__);
 		sem_post(&pd->sem);
 
 		pd->cnt--;
@@ -77,12 +84,12 @@ void *thread_producer(void *data)
 
 typedef void *(*pthread_func_t)(void *);
 
-#define THREAD_NUM 3
+#define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
 
-pthread_func_t func_list[THREAD_NUM] = {
+pthread_func_t func_list[] = {
 	thread_consumer_a,
 	thread_consumer_b,
-	thread_producer
+	thread_producer_c
 };
 
 int main(int argc, char *argv[])
@@ -107,6 +114,7 @@ int main(int argc, char *argv[])
 	ptd->cnt = 10;
 	ptd->cmd = 1;
 	ptd->stop = 0;
+	gen_thread_slot(ptd);
 
 	attr = malloc(sizeof(pthread_attr_t));
 	if (!attr) {
@@ -117,7 +125,7 @@ int main(int argc, char *argv[])
 
 	pthread_attr_init(attr);
 
-	for(i = 0;i < THREAD_NUM;i++) {
+	for(i = 0;i < ARRAY_SIZE(func_list);i++) {
 		r = pthread_create(&subid[i], attr, func_list[i], (void *)ptd);
 		if (r) {
 			printf("create thread failed %d\n", r);
@@ -126,11 +134,16 @@ int main(int argc, char *argv[])
 		printf("thread %d created\n", (int)subid[i]);
 	}
 
-	for(i = 0;i < THREAD_NUM;i++) {
-		r = pthread_join(subid[i], NULL);
-		if (r)
-			printf("join thread %d failed %d\n", (int)subid[i], r);
-	}
+	// waiting producer thread terminated
+	pthread_join(subid[2], NULL);
+
+	// kill consumer thread
+	pthread_cancel(subid[1]);
+	pthread_cancel(subid[0]);
+
+	// waiting consumer thread
+	pthread_join(subid[1], NULL);
+	pthread_join(subid[0], NULL);
 
 	free(ptd);
 
