@@ -8,7 +8,7 @@
 
 int write_text(int socket_fd, char *text)
 {
-	int len = strlen(text) + 1;
+	int len = strlen(text);
 	int r;
 
 	r = write(socket_fd, &len, sizeof(len));
@@ -22,17 +22,17 @@ int main(int argc, char *argv[])
 {
 	char *socket_name;
 	char *message;
-	int socket_fd;
+	int socket_fd, i;
 	struct sockaddr_un name;
-	int cnt = 0xffff;
 
 	if (argc < 3) {
-		printf("./%s name message\n", __func__);
+		printf("client name and message ?\n");
 		return -1;
 	}
-
 	socket_name = argv[1];
-	message = argv[2];
+
+	printf("client connects server %s, send %d messages ...\n",
+		socket_name, argc - 2);
 
 	socket_fd = socket(PF_LOCAL, SOCK_STREAM, 0);
 
@@ -41,15 +41,12 @@ int main(int argc, char *argv[])
 
 	connect(socket_fd, (const struct sockaddr *)&name, SUN_LEN(&name));
 
-	while (1) {
+	for(i = 2;i < argc; i++) {
+		message = argv[i];
 		write_text(socket_fd, message);
 		sleep(1);
-		if (!cnt)
-			break;
-		cnt--;
 	}
-
 	close(socket_fd);
+	printf("client disconnect server %s\n", socket_name);
 	return 0;
 }
-

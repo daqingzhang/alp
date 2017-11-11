@@ -8,41 +8,47 @@
 
 int server(int client_socket)
 {
+	int disconnect, len, r;
+	char *text;
+
+	disconnect = 0;
 	while (1) {
-		int length, r, cnt=0;
-		char *text;
-
-		r = read(client_socket, &length, sizeof(length));
+		r = read(client_socket, &len, sizeof(len));
 		if (!r)
-			return 0; // client closed connection
+			break;
 
-		text = (char *)malloc(length);
+		text = (char *)malloc(len + 1);
 
-		memset(text, 0, length);
+		memset(text, 0, len + 1);
 
-		r = read(client_socket, text, length);
+		r = read(client_socket, text, len);
 		if (r)
-			printf("%s , cnt: %d\n", text, ++cnt);
+			printf("got message: %s\n", text);
+
+		if (!strcmp(text, "quit"))
+			disconnect = 1;
 
 		free(text);
 
-		if (!strcmp(text, "quit"))
-			return 1;
+		if (disconnect)
+			break;
 	}
+	return disconnect;
 }
 
 int main(int argc, char *argv[])
 {
 	char *socket_name;
-	int socket_fd;
+	int socket_fd, quit, r;
 	struct sockaddr_un name;
-	int quit, r;
 
 	if (argc < 2) {
-		printf("socket name not find\n");
+		printf("server 's name ?\n");
 		return -1;
 	}
 	socket_name = argv[1];
+
+	printf("server %s is waitting connection ...\n", socket_name);
 
 	socket_fd = socket(PF_LOCAL, SOCK_STREAM, 0);
 	if (socket_fd < 0) {
@@ -75,13 +81,12 @@ int main(int argc, char *argv[])
 		quit = server(client_socket_fd);
 
 		close(client_socket_fd);
-
 	} while(!quit);
-
-	printf("server connection quit\n");
 
 	close(socket_fd);
 	unlink(socket_name);
+
+	printf("server %s disconnected\n", socket_name);
 
 	return 0;
 }
