@@ -7,15 +7,36 @@ c1
 -------------------------------------------------------------------------------
 1. Using GCC to compile and link c source files
 2. Using Makefile scripts
+
+	-L -I -D -O -c -o -l -g --static -Werror -Wall
+
 3. Using GDB to debug program
 4. Using man and info
 
 c2
 -------------------------------------------------------------------------------
 1. Getting main() arguments and parsing it as options
-2. Getting environment varibles and exit code: setenv(), getenv()
-3. Using standard IO: stdin, stdout, stderr: fprintf(), fflush()
-4. Using temporary file: mkstemp(), unlink(), read() , write(), close()
+
+	getopt_long();
+
+2. Getting environment varibles and exit code
+
+	setenv();
+	getenv();
+
+3. Using standard IO: stdin, stdout, stderr
+
+	printf();
+	fprintf();
+	fflush();
+
+4. Using temporary file
+
+	mkstemp();
+	unlink();
+	read();
+	write();
+	close();
 
 c2-2
 -------------------------------------------------------------------------------
@@ -24,18 +45,30 @@ c2-2
 c2-3
 -------------------------------------------------------------------------------
 1. Writing and Using dynamic library.
-2. Dynamically loading library: LD_LIBRARY_PATH
+2. Dynamically loading library
+
+	LD_LIBRARY_PATH;
+
 3. Library dependencies
 
 c3
 -------------------------------------------------------------------------------
-1. Getting process ID: getpid()
-2. Creating and killing process: kill(), fork()
+1. Getting process ID
+
+	getpid();
+
+2. Creating and killing process
+
+	kill();
+	fork();
+
 3. Zombie process
 
 c3-2
 -------------------------------------------------------------------------------
-1. Cleaning up sub-process: wait()
+1. Cleaning up sub-process
+
+	wait();
 
 c4
 -------------------------------------------------------------------------------
