@@ -35,7 +35,7 @@ int get_home_page(int socket_fd)
 		num = read(socket_fd, buffer, BUF_SIZE);
 		if (num == 0)
 			return 0;
-		printf("num = %d\n", num);
+		printf("num = %d\n", (int)num);
 		fwrite(buffer, sizeof(char), num, stdout);
 	}
 	return len;

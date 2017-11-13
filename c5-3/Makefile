@@ -8,8 +8,8 @@ CLIENT	:= client
 SER_COBJS	:= server.o
 CLI_COBJS	:= client.o
 
-all: $(SERVER) $(CLIENT)
-	@echo "Build $(SERVER) success !"
+all: $(CLIENT)
+	@echo "Build $^ success !"
 
 $(CLIENT): $(CLI_COBJS)
 	$(CC) $(CFLAGS) -o $@ $^
