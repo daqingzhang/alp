@@ -1,7 +1,7 @@
 CC	:= gcc
 INCS	:= include
 TOPDIR	:= ./
-CFLAGS	:= -I$(INCS) -L$(TOPDIR) -O2 -DDEBUG -g -Wall --static
+CFLAGS	:= -I$(INCS) -L$(TOPDIR) -O2 -g -Wall
 
 APP	:= calc
 COBJS	:= calc.o

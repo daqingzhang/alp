@@ -9,22 +9,34 @@
 #define DBG(...) do{}while(0)
 #endif
 
+#define CALC_NAME "calc"
+#define CALC_VER_M 1
+#define CALC_VER_N 0
+
 static const struct option long_options[] = {
 	{ "help",	0, NULL, 'h' },
+	{ "version",	0, NULL, 'v' },
 	{ "add",	1, NULL, 'a' },
 	{ "sub",	1, NULL, 's' },
 	{ "mul",	1, NULL, 'm' },
 	{ "div",	1, NULL, 'd' },
-	{ NULL,		0, NULL,  0  },
+	{ NULL, 	0, NULL,  0  },
 };
 
-static const char *short_options = "ha:s:m:d:";
+static const char *short_options = "hva:s:m:d:";
 static char *prg_name;
+
+static void print_version(FILE *stream)
+{
+	fprintf(stream, "%s version %d.%d\n",
+		CALC_NAME, CALC_VER_M, CALC_VER_N);
+}
 
 static void print_usage(FILE *stream, int exit_code)
 {
-	fprintf(stream, "Usage: %s\n", prg_name);
+	fprintf(stream, "%s usage:\n", CALC_NAME);
 	fprintf(stream, " -h --help		Display usage information.\n"
+			" -v --version		Display version.\n"
 			" -a --add [d1] [d2]	d1 + d2 \n"
 			" -s --sub [d1] [d2]	d1 - d2 \n"
 			" -m --mul [d1] [d2]	d1 * d2 \n"
@@ -43,7 +55,7 @@ static int do_calc(int a, int b, int op, int *res)
 {
 	int s = 0, r = 0;
 
-	switch(op) {
+	switch (op) {
 	case CALC_CMD_ADD:
 		s = a + b;
 		break;
@@ -77,6 +89,11 @@ static int get_calc_param(int argc, char *argv[], int *pa, int *pb)
 	return 0;
 }
 
+static void print_calc_res(FILE *stream, int res)
+{
+	fprintf(stream, "%d\n", res);
+}
+
 int start_calc(int argc, char *argv[])
 {
 	int i, err, stop = 0, opt;
@@ -95,33 +112,36 @@ int start_calc(int argc, char *argv[])
 		case 'h':
 			print_usage(stdout, 0);
 			break;
+		case 'v':
+			print_version(stdout);
+			break;
 		case 'a':
 			get_calc_param(argc, argv, &d1, &d2);
 			err = do_calc(d1, d2, CALC_CMD_ADD, &res);
 			if (err)
 				print_usage(stderr, 1);
-			stop = 1;
+			print_calc_res(stdout, res);
 			break;
 		case 's':
 			get_calc_param(argc, argv, &d1, &d2);
 			err = do_calc(d1, d2, CALC_CMD_SUB, &res);
 			if (err)
 				print_usage(stderr, 1);
-			stop = 1;
+			print_calc_res(stdout, res);
 			break;
 		case 'm':
 			get_calc_param(argc, argv, &d1, &d2);
 			err = do_calc(d1, d2, CALC_CMD_MUL, &res);
 			if (err)
 				print_usage(stderr, 1);
-			stop = 1;
+			print_calc_res(stdout, res);
 			break;
 		case 'd':
 			get_calc_param(argc, argv, &d1, &d2);
 			err = do_calc(d1, d2, CALC_CMD_DIV, &res);
 			if (err)
 				print_usage(stderr, 1);
-			stop = 1;
+			print_calc_res(stdout, res);
 			break;
 		case '?': // invalid option
 			print_usage(stderr, 1);
@@ -132,18 +152,70 @@ int start_calc(int argc, char *argv[])
 			abort();//abort exception, generate core dump
 		}
 
-		if (!err)
-			printf("= %d\n", res);
-
 		if (stop)
 			break;
 	} while(opt != -1);
 	return 0;
 }
 
+int parse_arguments(const char *s, char **argv[])
+{
+	return 0;
+}
+
+#define CALC_TMP_BUF_SIZE 2000
+#define CALC_CMD_BUF_SIZE 100
+
+struct calc_data {
+	char	tmp[CALC_TMP_BUF_SIZE];
+	char*	cmd[CALC_CMD_BUF_SIZE];
+	int	cmdlen;
+	int	tmplen;
+	int 	tmpsize;
+	int 	cmdsize;
+};
+
+void init_calc_data(struct calc_data *pd)
+{
+	pd->cmdsize = CALC_CMD_BUF_SIZE;
+	pd->tmpsize = CALC_TMP_BUF_SIZE;
+	pd->tmplen = 0;
+	pd->cmdlen = 0;
+}
+
+void print_screen(void)
+{
+
+}
+
+int input_cmd(struct calc_data *pd)
+{
+	return 0;
+}
+
+int parse_cmd(struct calc_data *pd)
+{
+	return 0;
+}
+
 int main(int argc, char *argv[])
 {
-	start_calc(argc, argv);
+	int quit = 0;
+	struct calc_data *pcd;
+
+	pcd = malloc(sizeof(struct calc_data));
+
+	init_calc_data(pcd);
+
+	do {
+		print_screen();
+		input_cmd(pcd);
+		quit = parse_cmd(pcd);
+		if (!quit)
+			start_calc(pcd->cmdlen, pcd->cmd);
+	} while (!quit);
+
+	free(pcd);
 
 	return 0;
 }
