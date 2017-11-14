@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <getopt.h>
 #include <unistd.h>
+#include <string.h>
+#include <comm_cmd.h>
 
 #ifdef DEBUG
 #define DBG printf
@@ -26,13 +28,13 @@ static const struct option long_options[] = {
 static const char *short_options = "hva:s:m:d:";
 static char *prg_name;
 
-static void print_version(FILE *stream)
+static void calc_print_version(FILE *stream)
 {
 	fprintf(stream, "%s version %d.%d\n",
 		CALC_NAME, CALC_VER_M, CALC_VER_N);
 }
 
-static void print_usage(FILE *stream, int exit_code)
+static void calc_print_usage(FILE *stream, int exit_code)
 {
 	fprintf(stream, "%s usage:\n", CALC_NAME);
 	fprintf(stream, " -h --help		Display usage information.\n"
@@ -41,7 +43,7 @@ static void print_usage(FILE *stream, int exit_code)
 			" -s --sub [d1] [d2]	d1 - d2 \n"
 			" -m --mul [d1] [d2]	d1 * d2 \n"
 			" -d --div [d1] [d2]	d1 / d2 \n");
-	exit(exit_code);
+//	exit(exit_code);
 }
 
 enum CALC_CMD {
@@ -51,7 +53,7 @@ enum CALC_CMD {
 	CALC_CMD_MUL,
 };
 
-static int do_calc(int a, int b, int op, int *res)
+static int calc_do_calculate(int a, int b, int op, int *res)
 {
 	int s = 0, r = 0;
 
@@ -80,7 +82,7 @@ static int do_calc(int a, int b, int op, int *res)
 	return r;
 }
 
-static int get_calc_param(int argc, char *argv[], int *pa, int *pb)
+static int calc_get_param(int argc, char *argv[], int *pa, int *pb)
 {
 	*pa = strtol(argv[optind - 1], NULL, 0);
 	*pb = strtol(argv[optind - 0], NULL, 0);
@@ -89,20 +91,22 @@ static int get_calc_param(int argc, char *argv[], int *pa, int *pb)
 	return 0;
 }
 
-static void print_calc_res(FILE *stream, int res)
+static void calc_print_result(FILE *stream, int res)
 {
 	fprintf(stream, "%d\n", res);
 }
 
 int start_calc(int argc, char *argv[])
 {
-	int i, err, stop = 0, opt;
+	int i;
+	int err, opt;
 	int d1 = 0, d2 = 0, res = 0;
 
 	for(i = 0; i < argc; i++)
 		DBG("argv[%d]: %s\n", i, argv[i]);
 
 	prg_name = argv[0];
+	optind = 1;
 
 	do {
 		opt = getopt_long(argc, argv, short_options,
@@ -110,112 +114,130 @@ int start_calc(int argc, char *argv[])
 		DBG("optind=%d\n", optind);
 		switch (opt) {
 		case 'h':
-			print_usage(stdout, 0);
+			calc_print_usage(stdout, 0);
 			break;
 		case 'v':
-			print_version(stdout);
+			calc_print_version(stdout);
 			break;
 		case 'a':
-			get_calc_param(argc, argv, &d1, &d2);
-			err = do_calc(d1, d2, CALC_CMD_ADD, &res);
+			calc_get_param(argc, argv, &d1, &d2);
+			err = calc_do_calculate(d1, d2, CALC_CMD_ADD, &res);
 			if (err)
-				print_usage(stderr, 1);
-			print_calc_res(stdout, res);
+				calc_print_usage(stderr, 1);
+			calc_print_result(stdout, res);
 			break;
 		case 's':
-			get_calc_param(argc, argv, &d1, &d2);
-			err = do_calc(d1, d2, CALC_CMD_SUB, &res);
+			calc_get_param(argc, argv, &d1, &d2);
+			err = calc_do_calculate(d1, d2, CALC_CMD_SUB, &res);
 			if (err)
-				print_usage(stderr, 1);
-			print_calc_res(stdout, res);
+				calc_print_usage(stderr, 1);
+			calc_print_result(stdout, res);
 			break;
 		case 'm':
-			get_calc_param(argc, argv, &d1, &d2);
-			err = do_calc(d1, d2, CALC_CMD_MUL, &res);
+			calc_get_param(argc, argv, &d1, &d2);
+			err = calc_do_calculate(d1, d2, CALC_CMD_MUL, &res);
 			if (err)
-				print_usage(stderr, 1);
-			print_calc_res(stdout, res);
+				calc_print_usage(stderr, 1);
+			calc_print_result(stdout, res);
 			break;
 		case 'd':
-			get_calc_param(argc, argv, &d1, &d2);
-			err = do_calc(d1, d2, CALC_CMD_DIV, &res);
+			calc_get_param(argc, argv, &d1, &d2);
+			err = calc_do_calculate(d1, d2, CALC_CMD_DIV, &res);
 			if (err)
-				print_usage(stderr, 1);
-			print_calc_res(stdout, res);
+				calc_print_usage(stderr, 1);
+			calc_print_result(stdout, res);
 			break;
 		case '?': // invalid option
-			print_usage(stderr, 1);
+			calc_print_usage(stderr, 1);
 			break;
 		case -1: // no more options are found
 			break;
 		default:
 			abort();//abort exception, generate core dump
 		}
-
-		if (stop)
-			break;
 	} while(opt != -1);
 	return 0;
 }
 
-int parse_arguments(const char *s, char **argv[])
+void cmd_calc_handler(int id, void *cdata, void *priv)
 {
-	return 0;
+	struct comm_data *d = cdata;
+
+	DBG("%s, cdata=%p, priv=%p\n", __func__, cdata, priv);
+
+	start_calc(d->argc, d->argv);
 }
 
-#define CALC_TMP_BUF_SIZE 2000
-#define CALC_CMD_BUF_SIZE 100
+void cmd_quit_handler(int id, void *cdata, void *priv)
+{
+	DBG("%s, cdata=%p, priv=%p\n", __func__, cdata, priv);
+	exit(0);
+}
 
-struct calc_data {
-	char	tmp[CALC_TMP_BUF_SIZE];
-	char*	cmd[CALC_CMD_BUF_SIZE];
-	int	cmdlen;
-	int	tmplen;
-	int 	tmpsize;
-	int 	cmdsize;
+void cmd_help_handler(int id, void *cdata, void *priv)
+{
+	DBG("%s, cdata=%p, priv=%p\n", __func__, cdata, priv);
+	comm_show_command();
+}
+
+static struct comm_data calc_cdata;
+
+static struct comm_cmd cmd_calc = {
+	.id = 1,
+	.name = "calc",
+	.cdata = &calc_cdata,
+	.priv = NULL,
+	.handler = cmd_calc_handler,
 };
 
-void init_calc_data(struct calc_data *pd)
-{
-	pd->cmdsize = CALC_CMD_BUF_SIZE;
-	pd->tmpsize = CALC_TMP_BUF_SIZE;
-	pd->tmplen = 0;
-	pd->cmdlen = 0;
-}
+static struct comm_cmd cmd_quit = {
+	.id = 2,
+	.name = "quit",
+	.cdata = NULL,
+	.priv = NULL,
+	.handler = cmd_quit_handler,
+};
 
-void print_screen(void)
-{
-
-}
-
-int input_cmd(struct calc_data *pd)
-{
-	return 0;
-}
-
-int parse_cmd(struct calc_data *pd)
-{
-	return 0;
-}
+static struct comm_cmd cmd_help = {
+	.id = 2,
+	.name = "help",
+	.cdata = NULL,
+	.priv = NULL,
+	.handler = cmd_help_handler,
+};
 
 int main(int argc, char *argv[])
 {
-	int quit = 0;
-	struct calc_data *pcd;
+	struct comm_data *pcd;
 
-	pcd = malloc(sizeof(struct calc_data));
+	pcd = malloc(sizeof(struct comm_data));
+	if (!pcd) {
+		printf("no enough memory\n");
+		return -1;
+	}
 
-	init_calc_data(pcd);
+	memset((void *)pcd, 0x0, sizeof(struct comm_data));
+
+	comm_init_command();
+	comm_data_init(pcd);
+	comm_clear_screen();
+
+	comm_cmd_register(&cmd_calc);
+	comm_cmd_register(&cmd_quit);
+	comm_cmd_register(&cmd_help);
 
 	do {
-		print_screen();
-		input_cmd(pcd);
-		quit = parse_cmd(pcd);
-		if (!quit)
-			start_calc(pcd->cmdlen, pcd->cmd);
-	} while (!quit);
+		comm_show_screen();
+		comm_get_command(pcd);
+		comm_parse_command(pcd);
+		comm_exec_command(pcd);
+	} while (1);
+
+	comm_cmd_unregister(&cmd_calc);
+	comm_cmd_unregister(&cmd_quit);
+	comm_cmd_unregister(&cmd_help);
+	comm_clear_screen();
 
 	free(pcd);
-
 	return 0;
 }

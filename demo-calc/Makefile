@@ -1,13 +1,17 @@
 CC	:= gcc
-INCS	:= include
+
 TOPDIR	:= ./
-CFLAGS	:= -I$(INCS) -L$(TOPDIR) -O2 -g -Wall
+INCS	:= -Iinclude
+INCS	+= -I$(TOPDIR)
+
+CFLAGS	:= $(INCS) -L$(TOPDIR) -O2 -g -Wall
+#CFLAGS	+= -DDEBUG
 
 APP	:= calc
-COBJS	:= calc.o
+COBJS	:= calc.o comm_cmd.o
 
 all: $(APP)
-	@echo "done"
+	@echo "Build $^ done !"
 
 $(APP): $(COBJS)
 	$(CC) $(CFLAGS) -o $@ $^
