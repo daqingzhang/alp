@@ -16,6 +16,7 @@ struct comm_data {
 struct comm_cmd {
 	int id;
 	char *name;
+	char *desc;
 	void *priv;
 	struct comm_data *cdata;
 	void (*handler)(int id, void *comm_data, void *priv);

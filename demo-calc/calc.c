@@ -185,6 +185,7 @@ static struct comm_data calc_cdata;
 static struct comm_cmd cmd_calc = {
 	.id = 1,
 	.name = "calc",
+	.desc = "a calculator",
 	.cdata = &calc_cdata,
 	.priv = NULL,
 	.handler = cmd_calc_handler,
@@ -193,14 +194,16 @@ static struct comm_cmd cmd_calc = {
 static struct comm_cmd cmd_quit = {
 	.id = 2,
 	.name = "quit",
+	.desc = "exit the program",
 	.cdata = NULL,
 	.priv = NULL,
 	.handler = cmd_quit_handler,
 };
 
 static struct comm_cmd cmd_help = {
-	.id = 2,
+	.id = 3,
 	.name = "help",
+	.desc = "show help info",
 	.cdata = NULL,
 	.priv = NULL,
 	.handler = cmd_help_handler,

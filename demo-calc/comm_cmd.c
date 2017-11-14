@@ -42,7 +42,13 @@ void comm_show_command(void)
 		cmd = comm_cmds[i];
 		if (!cmd)
 			continue;
-		dprintf("\t%s\n", cmd->name);
+		if ((cmd->id < 0) || (!cmd->name))
+			continue;
+		dprintf("\t%s - ", cmd->name);
+		if (!cmd->desc)
+			dprintf("\n");
+		else
+			dprintf("%s\n", cmd->desc);
 	}
 }
 
