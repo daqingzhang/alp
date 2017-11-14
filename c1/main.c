@@ -5,6 +5,15 @@ int main(int argc, const char *argv[])
 {
 	int n, a = 1, b = 1;
 	const char *p;
+	char end='\0';
+	char space=' ';
+
+	printf("end: %x, space: %x\n", end, space);
+
+	fprintf(stdout, " this is fprintf stdout");
+	printf(" this is printf stdout");
+	printf(" this is printf stdout with end\n");
+	while(1);
 
 	printf("argc=%d\n", argc);
 	if (argc > 0) {

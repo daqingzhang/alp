@@ -1,6 +1,6 @@
 CC	:= gcc
 INCS	:= include
-CFLAGS	:= -I$(INCS) -O2 -DDEBUG -g --static
+CFLAGS	:= -I$(INCS) -O0 -DDEBUG -g --static
 
 APP	:= main
 COBJS	:= main.o abc.o
