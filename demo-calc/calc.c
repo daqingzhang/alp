@@ -4,12 +4,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <comm_cmd.h>
-
-#ifdef DEBUG
-#define DBG printf
-#else
-#define DBG(...) do{}while(0)
-#endif
+#include <calc.h>
 
 #define CALC_NAME "calc"
 #define CALC_VER_M 1
@@ -96,7 +91,7 @@ static void calc_print_result(FILE *stream, int res)
 	fprintf(stream, "%d\n", res);
 }
 
-int start_calc(int argc, char *argv[])
+static int start_calc(int argc, char *argv[])
 {
 	int i;
 	int err, opt;
@@ -159,25 +154,13 @@ int start_calc(int argc, char *argv[])
 	return 0;
 }
 
-void cmd_calc_handler(int id, void *cdata, void *priv)
+static void cmd_calc_handler(int id, void *cdata, void *priv)
 {
 	struct comm_data *d = cdata;
 
 	DBG("%s, cdata=%p, priv=%p\n", __func__, cdata, priv);
 
 	start_calc(d->argc, d->argv);
-}
-
-void cmd_quit_handler(int id, void *cdata, void *priv)
-{
-	DBG("%s, cdata=%p, priv=%p\n", __func__, cdata, priv);
-	exit(0);
-}
-
-void cmd_help_handler(int id, void *cdata, void *priv)
-{
-	DBG("%s, cdata=%p, priv=%p\n", __func__, cdata, priv);
-	comm_show_command();
 }
 
 static struct comm_data calc_cdata;
@@ -191,56 +174,12 @@ static struct comm_cmd cmd_calc = {
 	.handler = cmd_calc_handler,
 };
 
-static struct comm_cmd cmd_quit = {
-	.id = 2,
-	.name = "quit",
-	.desc = "exit the program",
-	.cdata = NULL,
-	.priv = NULL,
-	.handler = cmd_quit_handler,
-};
-
-static struct comm_cmd cmd_help = {
-	.id = 3,
-	.name = "help",
-	.desc = "show help info",
-	.cdata = NULL,
-	.priv = NULL,
-	.handler = cmd_help_handler,
-};
-
-int main(int argc, char *argv[])
+int calc_cmd_register(void)
 {
-	struct comm_data *pcd;
+	return comm_cmd_register(&cmd_calc);
+}
 
-	pcd = malloc(sizeof(struct comm_data));
-	if (!pcd) {
-		printf("no enough memory\n");
-		return -1;
-	}
-
-	memset((void *)pcd, 0x0, sizeof(struct comm_data));
-
-	comm_init_command();
-	comm_data_init(pcd);
-	comm_clear_screen();
-
-	comm_cmd_register(&cmd_calc);
-	comm_cmd_register(&cmd_quit);
-	comm_cmd_register(&cmd_help);
-
-	do {
-		comm_show_screen();
-		comm_get_command(pcd);
-		comm_parse_command(pcd);
-		comm_exec_command(pcd);
-	} while (1);
-
-	comm_cmd_unregister(&cmd_calc);
-	comm_cmd_unregister(&cmd_quit);
-	comm_cmd_unregister(&cmd_help);
-	comm_clear_screen();
-
-	free(pcd);
-	return 0;
+int calc_cmd_unregister(void)
+{
+	return comm_cmd_unregister(&cmd_calc);
 }

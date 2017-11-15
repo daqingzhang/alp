@@ -1,23 +1,9 @@
 #include <stdio.h>
 #include <string.h>
-#include "comm_cmd.h"
-
-#ifdef DEBUG
-#define DBG printf
-#else
-#define DBG(...) do{}while(0)
-#endif
+#include <comm_cmd.h>
 
 #define dprintf printf
 #define comm_fgetc() fgetc(stdin)
-
-#define COMM_ASCII_SPACE 0x20
-#define COMM_ASCII_TAB	 0x09
-#define COMM_ASCII_EOF   '\0'
-
-#define COMM_ERR_INV_ID 	1
-#define COMM_ERR_NULL_PTR	2
-#define COMM_ERR_NULL_NAME	3
 
 #define COMM_MAX_CMDS	100
 
@@ -71,6 +57,10 @@ int comm_data_init(struct comm_data *d)
 	return 0;
 }
 
+#define COMM_ASCII_SPACE 0x20
+#define COMM_ASCII_TAB	 0x09
+#define COMM_ASCII_EOF   '\0'
+
 int comm_get_command(struct comm_data *d)
 {
 	char *temp = d->temp;
@@ -118,7 +108,7 @@ int comm_parse_command(struct comm_data *d)
 				break;
 			if ((temp[tmpi] == COMM_ASCII_SPACE)
 				|| (temp[tmpi] == COMM_ASCII_TAB)) {
-				temp[tmpi] = '\0';
+				temp[tmpi] = COMM_ASCII_EOF;
 				tmpi++;
 				break;
 			}
@@ -169,31 +159,44 @@ int comm_exec_command(struct comm_data *d)
 	return 0;
 }
 
+#define COMM_ERR_CMD	2
+#define COMM_ERR_ID 	3
+#define COMM_ERR_NAME	4
+#define COMM_ERR_POS	5
+
 static int comm_check_command(struct comm_cmd *cmd)
 {
 	if (!cmd) {
 		DBG("null cmd\n");
-		return -COMM_ERR_NULL_PTR;
+		return -COMM_ERR_CMD;
 	}
 	if (cmd->id < 0) {
 		DBG("cmd id %d, should be 0 ~ %d\n",
 			cmd->id, COMM_MAX_CMDS);
-		return -COMM_ERR_INV_ID;
+		return -COMM_ERR_ID;
 	}
 	if (!cmd->name) {
 		DBG("cmd name is null\n");
-		return -COMM_ERR_NULL_NAME;
+		return -COMM_ERR_NAME;
 	}
 	return 0;
 }
 
-static int comm_match_command(struct comm_cmd *cmd)
+static int comm_match_command(struct comm_cmd *c)
 {
 	int i;
 
 	for(i = 0; i < COMM_MAX_CMDS; i++) {
-		if (comm_cmds[i] == cmd)
-			return i;
+		struct comm_cmd *cmd;
+
+		cmd = comm_cmds[i];
+
+		if (cmd == c) {
+			if (!c)
+				return i;
+			if (!strcmp(cmd->name, c->name))
+				return i;
+		}
 	}
 	return -1;
 }
@@ -203,7 +206,7 @@ static int comm_match_command(struct comm_cmd *cmd)
 static int comm_set_command(struct comm_cmd *cmd, int pos)
 {
 	if (pos >= COMM_MAX_CMDS)
-		return -1;
+		return -COMM_ERR_POS;
 	comm_cmds[pos] = cmd;
 	return 0;
 }
@@ -220,7 +223,9 @@ int comm_cmd_register(struct comm_cmd *cmd)
 	if (pos < 0)
 		return -1;
 
-	comm_set_command(cmd, pos);
+	r = comm_set_command(cmd, pos);
+	if (r)
+		return r;
 
 	DBG("register cmd: %s, %d, handler[%p]\n",
 		cmd->name, cmd->id, cmd->handler);
@@ -239,7 +244,9 @@ int comm_cmd_unregister(struct comm_cmd *cmd)
 	if (pos < 0)
 		return -1;
 
-	comm_set_command(NULL, pos);
+	r = comm_set_command(NULL, pos);
+	if (r)
+		return r;
 
 	DBG("unregister cmd: %s, %d, handler[%p]\n",
 		cmd->name, cmd->id, cmd->handler);
