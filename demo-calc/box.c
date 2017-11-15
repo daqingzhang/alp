@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
 #include <comm_cmd.h>
 #include <calc.h>
 
@@ -21,7 +20,7 @@ static void cmd_help_handler(int id, void *cdata, void *priv)
 }
 
 static struct comm_cmd cmd_quit = {
-	.id = 2,
+	.id = 99,
 	.name = "quit",
 	.desc = "exit the program",
 	.cdata = NULL,
@@ -30,7 +29,7 @@ static struct comm_cmd cmd_quit = {
 };
 
 static struct comm_cmd cmd_help = {
-	.id = 3,
+	.id = 100,
 	.name = "help",
 	.desc = "show help info",
 	.cdata = NULL,
