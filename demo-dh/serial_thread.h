@@ -19,9 +19,8 @@ struct serial_conf {
 	char undef;
 };
 
-
 struct serial_chan {
-	unsigned char buf[SERIAL_CHAN_BUF_SIZE];
+	char buf[SERIAL_CHAN_BUF_SIZE];
 	unsigned int cnt;
 	unsigned int len;
 	unsigned int size;
@@ -30,15 +29,16 @@ struct serial_chan {
 
 struct serial_ctrl {
 	int cmd;
-	int open;
 	int stop;
+	int status;
+	int fd;
 	sem_t rx_ready;
 	sem_t tx_ready;
 	sem_t active;
 	pthread_t pid;
 	pthread_attr_t attr;
-	pthread_mutext_t mutex;
-	void (*run)(void *data);
+	pthread_mutex_t mutex;
+	void* (*run)(void *data);
 };
 
 struct serial_prop {
@@ -56,10 +56,10 @@ struct serial_obj {
 	int (*open)(struct serial_obj *obj, const char *port);
 	void (*close)(struct serial_obj *obj);
 	void (*debug)(struct serial_obj *obj);
-	unsigned int (*read)(struct serial_obj *obj, char *pbuf,
-			unsigned int len, unsigned int timeout);
-	unsigned int (*write)(struct serial_obj *obj, const char *pbuf,
-			unsigned int len);
+	unsigned int (*read)(struct serial_obj *obj,
+			char *pbuf, unsigned int len, unsigned int tm_sec);
+	unsigned int (*write)(struct serial_obj *obj,
+			const char *pbuf, unsigned int len);
 };
 
 struct serial_obj *serial_create(const char *name);

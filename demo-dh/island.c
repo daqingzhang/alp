@@ -9,7 +9,7 @@ static struct ship_ticket tickets[] = {
 	{ ISLAND_RX,	ISLAND_IDLE,	TK_RX_TO_IDLE	},
 };
 
-island_t take_ship(enum island from, enum ticket t)
+island_t take_ship(island_t from, enum ticket t)
 {
 	int i;
 	island_t to = ISLAND_NULL;

@@ -32,11 +32,11 @@ typedef enum {
 }island_t;
 
 struct ship_ticket {
-	enum island from;
-	enum island to;
+	island_t from;
+	island_t to;
 	enum ticket t;
 };
 
-island_t take_ship(enum island from, enum ticket t);
+island_t take_ship(island_t from, enum ticket t);
 
 #endif
