@@ -6,6 +6,7 @@ INCS	:= -Iinclude
 INCS	+= -I$(TOPDIR)
 
 CFLAGS	:= $(INCS) -L$(TOPDIR) -O2 -g -Wall
+CFLAGS	+= -D_REENTRANT
 CFLAGS	+= -DDEBUG
 
 APP	:= main
