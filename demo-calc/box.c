@@ -37,7 +37,7 @@ static struct comm_cmd cmd_help = {
 	.handler = cmd_help_handler,
 };
 
-int box_cmd_register(void)
+int trivial_cmd_register(void)
 {
 	int r;
 
@@ -47,7 +47,7 @@ int box_cmd_register(void)
 	return r;
 }
 
-int box_cmd_unregister(void)
+int trivial_cmd_unregister(void)
 {
 	int r;
 
@@ -57,17 +57,14 @@ int box_cmd_unregister(void)
 	return r;
 }
 
+static struct comm_data box_cdata;
+
 int main(int argc, char *argv[])
 {
-	struct comm_data *pcd;
+	int r;
+	struct comm_data *pcd = &box_cdata;
 
 	box_quit = 0;
-
-	pcd = malloc(sizeof(struct comm_data));
-	if (!pcd) {
-		printf("no enough memory\n");
-		return -1;
-	}
 
 	memset((void *)pcd, 0x0, sizeof(struct comm_data));
 
@@ -75,8 +72,12 @@ int main(int argc, char *argv[])
 	comm_data_init(pcd);
 	comm_clear_screen();
 
-	box_cmd_register();
-	calc_cmd_register();
+	r = trivial_cmd_register();
+	r += calc_cmd_register();
+	if (r) {
+		printf("register cmd failed %d\n", r);
+		return r;
+	}
 
 	do {
 		comm_show_screen();
@@ -85,12 +86,14 @@ int main(int argc, char *argv[])
 		comm_exec_command(pcd);
 	} while (!box_quit);
 
-	box_cmd_unregister();
-	calc_cmd_unregister();
+	r = trivial_cmd_unregister();
+	r += calc_cmd_unregister();
+	if (r) {
+		printf("unregister cmd failed %d\n", r);
+		return r;
+	}
 
 	comm_clear_screen();
-
-	free(pcd);
 
 	printf("See you again.\n");
 	return 0;

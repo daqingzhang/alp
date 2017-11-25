@@ -168,7 +168,14 @@ static struct comm_data calc_cdata;
 static struct comm_cmd cmd_calc = {
 	.id = 1,
 	.name = "calc",
-	.desc = "a calculator",
+	.desc = "a calculator\n"
+		"usage:\n"
+		" -h --help		Display usage information\n"
+		" -v --version		Display version\n"
+		" -a --add [d1] [d2]	d1 + d2\n"
+		" -s --sub [d1] [d2]	d1 - d2\n"
+		" -m --mul [d1] [d2]	d1 * d2\n"
+		" -d --div [d1] [d2]	d1 / d2\n",
 	.cdata = &calc_cdata,
 	.priv = NULL,
 	.handler = cmd_calc_handler,

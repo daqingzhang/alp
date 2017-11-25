@@ -2,9 +2,11 @@
 #define __COMM_CMD_H__
 #include <stdio.h>
 
+#define ioprintf printf
+
 #ifdef DEBUG
 #ifndef DBG
-#define DBG printf
+#define DBG ioprintf
 #endif // !DBG
 #else
 #ifndef DBG

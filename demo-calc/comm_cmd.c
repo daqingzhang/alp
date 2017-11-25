@@ -2,21 +2,23 @@
 #include <string.h>
 #include <comm_cmd.h>
 
-#define dprintf printf
-#define comm_fgetc() fgetc(stdin)
-
 #define COMM_MAX_CMDS	100
 
 static struct comm_cmd *comm_cmds[COMM_MAX_CMDS];
 
+static int comm_fgetc(void)
+{
+	return fgetc(stdin);
+}
+
 void comm_clear_screen(void)
 {
-	dprintf("\n");
+	ioprintf("\n");
 }
 
 void comm_show_screen(void)
 {
-	dprintf("CMD>");
+	ioprintf("CMD>");
 }
 
 void comm_show_command(void)
@@ -30,11 +32,11 @@ void comm_show_command(void)
 			continue;
 		if ((cmd->id < 0) || (!cmd->name))
 			continue;
-		dprintf("\t%s - ", cmd->name);
+		ioprintf("%s - ", cmd->name);
 		if (!cmd->desc)
-			dprintf("\n");
+			ioprintf("\n");
 		else
-			dprintf("%s\n", cmd->desc);
+			ioprintf("%s\n", cmd->desc);
 	}
 }
 
@@ -70,7 +72,7 @@ int comm_get_command(struct comm_data *d)
 	while (1) {
 		/* comm_fgetc() should be blocked until data comm */
 		c = comm_fgetc();
-		if (c == '\n') {
+		if ((c == '\n') || (c == '\r')) {
 			temp[cnt++] = COMM_ASCII_EOF;
 			break;
 		}
