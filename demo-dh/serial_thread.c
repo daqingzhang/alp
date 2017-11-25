@@ -39,17 +39,17 @@ static int serial_unlock(struct serial_obj *obj)
 static void serial_send_cmd(struct serial_obj *obj, int cmd)
 {
 	struct serial_ctrl *ctrl = obj_to_prop_ctrl(obj);
+
 	ctrl->cmd = cmd;
 	sem_post(&ctrl->active);
 }
 
-static int serial_send_stop(struct serial_obj *obj, int stop)
+static void serial_send_stop(struct serial_obj *obj, int stop)
 {
 	struct serial_ctrl *ctrl = obj_to_prop_ctrl(obj);
+
 	ctrl->stop = stop;
 	sem_post(&ctrl->active);
-
-	return 0;
 }
 
 static int serial_wait_rx_ready(struct serial_obj *obj, unsigned int tm_sec)
@@ -66,7 +66,8 @@ static int serial_wait_rx_ready(struct serial_obj *obj, unsigned int tm_sec)
 
 	tm_sec = (tm_sec == 0) ? 1 : tm_sec;
 	ts.tv_sec += tm_sec;
-	DBG("%s, tv_sec=%d, tm_sec=%d\n", __func__, (unsigned int)(ts.tv_sec), tm_sec);
+	DBG("%s, tv_sec=%d, tm_sec=%d\n", __func__,
+		(unsigned int)(ts.tv_sec), tm_sec);
 
 	r = sem_timedwait(&ctrl->rx_ready, &ts);
 	if (r)
@@ -88,6 +89,7 @@ static int serial_wait_tx_ready(struct serial_obj *obj, unsigned int tm)
 static int serial_is_stopped(struct serial_obj *obj)
 {
 	struct serial_ctrl *ctrl = obj_to_prop_ctrl(obj);
+
 	return ctrl->stop;
 }
 
@@ -95,7 +97,6 @@ static int serial_is_stopped(struct serial_obj *obj)
 static island_t serial_idle_process(struct serial_obj *obj, island_t land)
 {
 	int cmd;
-
 	struct serial_ctrl *ctrl = obj_to_prop_ctrl(obj);
 
 	DBG("%s wait sem\n", __func__);
@@ -108,11 +109,11 @@ static island_t serial_idle_process(struct serial_obj *obj, island_t land)
 		return land;
 
 	cmd  = ctrl->cmd;
+	ctrl->cmd = SER_CMD_NULL;
+
 	if (cmd == SER_CMD_WR) {
-		ctrl->cmd = SER_CMD_NULL;
 		land = take_ship(land, TK_IDLE_TO_TX);
 	} else if (cmd == SER_CMD_RD) {
-		ctrl->cmd = SER_CMD_NULL;
 		land = take_ship(land, TK_IDLE_TO_RX);
 	}
 	return land;
@@ -128,6 +129,8 @@ static island_t serial_tx_process(struct serial_obj *obj, island_t land)
 #ifdef DEBUG
 	usleep(100);
 #endif
+
+	// TODO: send data
 
 	sem_post(&ctrl->tx_ready);
 
@@ -153,6 +156,8 @@ static island_t serial_rx_process(struct serial_obj *obj, island_t land)
 	rxchan->cnt = i;
 	usleep(100);
 #endif
+	// TODO: receive data
+
 	sem_post(&ctrl->rx_ready);
 
 	return land;
@@ -164,7 +169,7 @@ static void* serial_run(void *data)
 	island_t land = ISLAND_IDLE;
 	volatile int stop = 0;
 
-	DBG("%s, start\n", __func__);
+	DBG("%s, start, data(%p)\n", __func__, data);
 	while(1) {
 		switch (land) {
 		case ISLAND_IDLE:
@@ -190,6 +195,12 @@ static void* serial_run(void *data)
 	return 0;
 }
 
+static int serial_obtain_id(void)
+{
+	// TODO: lock counter
+	return serial_obj_cnt++;
+}
+
 /* Private Functions */
 static int serial_init(struct serial_obj *obj, const char *name)
 {
@@ -198,8 +209,7 @@ static int serial_init(struct serial_obj *obj, const char *name)
 	struct serial_conf *conf = obj_to_prop_conf(obj);
 	struct serial_ctrl *ctrl = obj_to_prop_ctrl(obj);
 
-	// TODO: add lock
-	prop->id = serial_obj_cnt++;
+	prop->id = serial_obtain_id();
 	prop->name = name;
 
 	conf->name  = NULL;
@@ -233,6 +243,28 @@ static int serial_init(struct serial_obj *obj, const char *name)
 	return 0;
 }
 
+static int serial_config(struct serial_obj *obj, int databit, char parity,
+				int stopbit)
+{
+	struct serial_conf *conf = obj_to_prop_conf(obj);
+
+	conf->data = databit;
+	conf->parity = parity;
+	conf->stop = stopbit;
+
+	// TODO: config serial
+	return 0;
+}
+
+static int serial_set_speed(struct serial_obj *obj, int baud)
+{
+	struct serial_conf *conf = obj_to_prop_conf(obj);
+
+	conf->speed = baud;
+	// TODO: config serial
+	return 0;
+}
+
 static int serial_open(struct serial_obj *obj, const char *port)
 {
 	struct serial_ctrl *ctrl = obj_to_prop_ctrl(obj);
@@ -253,34 +285,35 @@ static void serial_close(struct serial_obj *obj)
 	}
 }
 
-static unsigned int serial_read(struct serial_obj *obj, char *pbuf,
-		unsigned int len, unsigned int timeout)
+static int serial_read(struct serial_obj *obj, char *pbuf,
+		unsigned int len, unsigned int tm_sec)
 {
 	int r;
-	unsigned int cnt = 0;
+	int cnt = -1;
 	struct serial_chan *rxchan = obj_to_prop_rxchan(obj);
 
 	DBG("%s %d bytes\n", __func__, len);
 
 	rxchan->cnt = 0;
 	rxchan->len = len;
-	rxchan->timeout = timeout;
+	rxchan->timeout = tm_sec;
 
 	serial_send_cmd(obj, SER_CMD_RD);
-	r = serial_wait_rx_ready(obj, timeout);
+
+	r = serial_wait_rx_ready(obj, tm_sec);
 	if (!r) {
-		cnt = rxchan->cnt;
+		cnt = (int)(rxchan->cnt);
 		if (cnt)
 			memcpy(pbuf, rxchan->buf, cnt);
 	}
 	return cnt;
 }
 
-static unsigned int serial_write(struct serial_obj *obj, const char *pbuf,
+static int serial_write(struct serial_obj *obj, const char *pbuf,
 			unsigned int len)
 {
 	int r;
-	unsigned int cnt = 0;
+	int cnt = -1;
 	struct serial_chan *txchan = obj_to_prop_txchan(obj);
 
 	DBG("%s %d bytes\n", __func__, len);
@@ -292,12 +325,13 @@ static unsigned int serial_write(struct serial_obj *obj, const char *pbuf,
 	serial_send_cmd(obj, SER_CMD_WR);
 	r = serial_wait_tx_ready(obj, 0);
 	if (!r)
-		cnt = txchan->len;
+		cnt = (int)(txchan->len);
 	return cnt;
 }
 
-static void serial_debug(struct serial_obj *obj)
+void serial_debug(struct serial_obj *obj)
 {
+	DBG("%s\n", __func__);
 }
 
 /* Public Functions */
@@ -310,14 +344,14 @@ struct serial_obj *serial_create(const char *name)
 	if (!obj)
 		return 0;
 
-	obj->init  = serial_init;
 	obj->open  = serial_open;
 	obj->read  = serial_read;
 	obj->write = serial_write;
 	obj->close = serial_close;
-	obj->debug = serial_debug;
+	obj->config = serial_config;
+	obj->set_speed = serial_set_speed;
 
-	r = obj->init(obj, name);
+	r = serial_init(obj, name);
 	if (r) {
 		DBG("%s, init obj failed %d\n", __func__, r);
 		free(obj);

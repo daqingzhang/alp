@@ -25,6 +25,8 @@ int main(int argc, char *argv[])
 		return r;
 	}
 
+	ser->config(ser, 115200, 8, 'N', 1);
+
 	while(cnt--) {
 		r = ser->write(ser, src, 8);
 		printf("%s, serial write %d bytes\n", __func__, r);
@@ -37,7 +39,10 @@ int main(int argc, char *argv[])
 		}
 		sleep(1);
 	}
+
 	ser->close(ser);
+
 	serial_destroy(ser);
+
 	return 0;
 }

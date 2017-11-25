@@ -52,13 +52,13 @@ struct serial_prop {
 
 struct serial_obj {
 	struct serial_prop prop;
-	int (*init)(struct serial_obj *obj, const char *name);
-	int (*open)(struct serial_obj *obj, const char *port);
+	int (*open)(struct serial_obj *obj, const char *port_name);
 	void (*close)(struct serial_obj *obj);
-	void (*debug)(struct serial_obj *obj);
-	unsigned int (*read)(struct serial_obj *obj,
+	int (*set_speed)(struct serial_obj *obj, int baud);
+	int (*config)(struct serial_obj *obj, int databit, char parity, int stopbit);
+	int (*read)(struct serial_obj *obj,
 			char *pbuf, unsigned int len, unsigned int tm_sec);
-	unsigned int (*write)(struct serial_obj *obj,
+	int (*write)(struct serial_obj *obj,
 			const char *pbuf, unsigned int len);
 };
 
