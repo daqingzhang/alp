@@ -3,7 +3,7 @@
 
 #define DBG printf
 
-static unsigned int pstrtol(const char *nptr, char **endptr, int base)
+static unsigned int astrtol(const char *nptr, char **endptr, int base)
 {
 	const char *s = nptr;
 	unsigned int v = 0, t;
@@ -11,6 +11,16 @@ static unsigned int pstrtol(const char *nptr, char **endptr, int base)
 
 	DBG("%s, s:%s, base=%d\n", __func__, nptr, base);
 
+	if (base == 0) {
+		if (s[0] == '0') {
+			if ((s[1] == 'x') || (s[1] == 'X'))
+				base = 16;
+			else
+				base = 8;
+		} else {
+			base = 10;
+		}
+	}
 	if (base == 10) {
 		pos = 1;
 		len = strlen(s);
@@ -36,15 +46,11 @@ static unsigned int pstrtol(const char *nptr, char **endptr, int base)
 			v += (t * (pos / base));
 		}
 	} else {
-		// default is hex data
 		if (((s[0] == '0') && (s[1] == 'x'))
 			|| ((s[0] == '0') && (s[1] == 'X')))
 			s += 2;
-
 		len = strlen(s);
 		for (i = 0; i < len; i++) {
-			if (*s == '\0')
-				break;
 			if ((*s >= 0x30) && (*s <= 0x39))
 				t = *s - 0x30;
 			else if ((*s >= 'a') && (*s <= 'f'))
@@ -62,8 +68,9 @@ static unsigned int pstrtol(const char *nptr, char **endptr, int base)
 	return v;
 }
 
-int main(void)
+int main(int argc, char *argv[])
 {
+#if 0
 	char hex1[] = "0x1234abcd";
 	char hex2[] = "0X12de";
 	char dec1[] = "12345678";
@@ -73,23 +80,40 @@ int main(void)
 
 	unsigned int tmp;
 
-	tmp = pstrtol(hex1, 0, 16);
+	tmp = astrtol(hex1, 0, 16);
 	printf("tmp=%x\n", tmp);
 
-	tmp = pstrtol(hex2, 0, 16);
+	tmp = astrtol(hex2, 0, 16);
 	printf("tmp=%x\n", tmp);
 
-	tmp = pstrtol(dec1, 0, 10);
+	tmp = astrtol(dec1, 0, 10);
 	printf("tmp=%x\n", tmp);
 
-	tmp = pstrtol(dec2, 0, 10);
+	tmp = astrtol(dec2, 0, 10);
 	printf("tmp=%x\n", tmp);
 
-	tmp = pstrtol(oct1, 0, 8);
+	tmp = astrtol(oct1, 0, 8);
 	printf("tmp=%x\n", tmp);
 
-	tmp = pstrtol(oct2, 0, 8);
+	tmp = astrtol(oct2, 0, 8);
 	printf("tmp=%x\n", tmp);
 
+	tmp = astrtol(hex1, 0, 0);
+	printf("tmp=%x\n", tmp);
+
+	tmp = astrtol(dec1, 0, 0);
+	printf("tmp=%x\n", tmp);
+
+	tmp = astrtol(oct1, 0, 0);
+	printf("tmp=%x\n", tmp);
+#else
+	unsigned int tmp;
+	int i;
+
+	for(i = 1; i < argc; i++) {
+		tmp = astrtol(argv[i], 0, 0);
+		printf("tmp=%x\n", tmp);
+	}
+#endif
 	return 0;
 }
