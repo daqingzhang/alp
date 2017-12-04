@@ -79,7 +79,7 @@ c4
 	pthread_join();
 	pthread_cancel();
 
-2. Using mutex in thread
+2. mutex in thread
 
 	pthread_mutex_init();
 	pthread_mutex_lock();
@@ -88,7 +88,7 @@ c4
 
 c4-2
 -------------------------------------------------------------------------------
-1. Using semaphore in thread
+1. semaphore in thread
 
 	sem_init();
 	sem_post();
@@ -97,14 +97,19 @@ c4-2
 
 c5
 -------------------------------------------------------------------------------
-1. Using shared memory for interprocess communincation
+1. shared memory for interprocess communincation
 
 	shmget();
 	shmat();
 	shmdt();
-
+	shmctl();
 
 c5-2
 -------------------------------------------------------------------------------
-1. Using socket for interprocess communication
+1. socket for interprocess communication
+communication methead:
+	(1) pipe;
+	(2) shared memory;
+	(3) semaphore;
+	(4) socket;
 
