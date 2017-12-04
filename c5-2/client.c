@@ -6,21 +6,18 @@
 #include <unistd.h>
 #include <errno.h>
 
-int write_text(int socket_fd, char *text)
+static int send_message(int socket_fd, char *msg)
 {
-	int len = strlen(text);
-	int r;
+	int len = strlen(msg), r;
 
 	r = write(socket_fd, &len, sizeof(len));
-
-	r += write(socket_fd, text, len);
-
+	r += write(socket_fd, msg, len);
 	return r;
 }
 
 static int client_socket(const char *name, int argc, char **argv)
 {
-	int fd, r, i;
+	int fd, r, i, len;
 	struct sockaddr_un sa;
 
 	fd = socket(PF_LOCAL, SOCK_STREAM, 0);
@@ -28,7 +25,7 @@ static int client_socket(const char *name, int argc, char **argv)
 		perror("socket failed\n");
 		return -1;
 	}
-	printf("fd=%d\n", fd);
+	printf("socket fd=%d\n", fd);
 
 	sa.sun_family = AF_LOCAL;
 	strcpy(sa.sun_path, name);
@@ -41,26 +38,29 @@ static int client_socket(const char *name, int argc, char **argv)
 	}
 
 	for(i = 2; i < argc; i++) {
-		write_text(fd, argv[i]);
+		len = send_message(fd, argv[i]);
+		if (len < 1) {
+			printf("semd message[%d] failed\n", i);
+			break;
+		}
 		sleep(1);
 	}
 	close(fd);
 	printf("client exit\n");
-
 	return 0;
 }
 
 int main(int argc, char *argv[])
 {
-	char *sock_name;
+	char *name;
 
 	if (argc < 3) {
-		printf("client name and message ?\n");
+		printf("./client [name] [message]\n");
 		return -1;
 	}
-	sock_name = argv[1];
+	name = argv[1];
 
-	client_socket(sock_name, argc, argv);
+	client_socket(name, argc, argv);
 
 	return 0;
 }
