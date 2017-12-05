@@ -23,14 +23,14 @@ int client_socket(const char *name, int argc, char **argv)
 	int fd, r, i, len;
 	struct sockaddr_un sa;
 
-	fd = socket(PF_LOCAL, SOCK_STREAM, 0);
+	fd = socket(PF_UNIX, SOCK_STREAM, 0);
 	if (fd < 0) {
 		perror("socket failed\n");
 		return -1;
 	}
 	printf("socket fd=%d\n", fd);
 
-	sa.sun_family = AF_LOCAL;
+	sa.sun_family = AF_UNIX;
 	strcpy(sa.sun_path, name);
 
 	r = connect(fd, (const struct sockaddr *)&sa,
@@ -67,7 +67,7 @@ int client_socket2(int argc, char **argv)
 
 	sa.sin_family = AF_INET;
 	sa.sin_addr.s_addr = inet_addr("127.0.0.1");
-	sa.sin_port = htons(9734);
+	sa.sin_port = htons(1234);
 
 	r = connect(fd, (const struct sockaddr *)&sa,
 				sizeof(struct sockaddr));
@@ -91,7 +91,7 @@ int client_socket2(int argc, char **argv)
 
 int main(int argc, char *argv[])
 {
-#if 0
+#if 1
 	char *name;
 	if (argc < 3) {
 		printf("./client [name] [message]\n");
@@ -99,7 +99,7 @@ int main(int argc, char *argv[])
 	}
 	name = argv[1];
 
-	client_socket1(name, argc, argv);
+	client_socket(name, argc, argv);
 #else
 	client_socket2(argc, argv);
 #endif

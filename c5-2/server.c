@@ -108,9 +108,10 @@ int server_socket2(void)
 
 	sa.sin_family = AF_INET;
 	sa.sin_addr.s_addr = inet_addr("127.0.0.1");
-	sa.sin_port = htons(9734);
+//	sa.sin_addr.s_addr = inet_addr("10.102.21.16");
+	sa.sin_port = htons(1234);
 
-	r = bind(fd, (const struct sockaddr *)&sa, sizeof(struct sockaddr));
+	r = bind(fd, (const struct sockaddr *)&sa, sizeof(sa));
 	if (r) {
 		perror("bind socket failed\n");
 		return -1;
@@ -150,14 +151,14 @@ int server_socket2(void)
 
 int main(int argc, char *argv[])
 {
-#if 0
+#if 1
 	char *name;
 	if (argc < 2) {
 		printf("./server [name]\n");
 		return -1;
 	}
 	name = argv[1];
-	server_socket1(name);
+	server_socket(name);
 #else
 	server_socket2();
 #endif
