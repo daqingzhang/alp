@@ -43,7 +43,7 @@ int main(int argc, char *argv[])
 
 	r = file->append(file, app, strlen(app));
 	r += file->append(file, app, strlen(app));
-	r += file->insert(file, -7, "xyz", 3);
+	r += file->insert(file, 7, "xyz", 3);
 	printf("write %d bytes to file\n", r);
 
 	r = file->close(file);
@@ -78,7 +78,6 @@ int main(int argc, char *argv[])
 	printf("\nfile data:\n");
 	printf("%s", buf);
 	printf("\n");
-
 out:
 	comm_file_destroy(file);
 	return 0;

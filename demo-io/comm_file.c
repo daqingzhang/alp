@@ -6,7 +6,11 @@
 #include <string.h>
 #include "comm_file.h"
 
+#ifdef DEBUG
 #define DBG printf
+#else
+#define DBG(...) do{}while(0)
+#endif
 
 static int comm_file_open(struct comm_file *f, const char *path)
 {
@@ -61,10 +65,12 @@ static int comm_file_close(struct comm_file *f)
 	return r;
 }
 
+#if 0
 static int file_getc(int fd, char *c)
 {
 	return read(fd, c, 1);
 }
+#endif
 
 #define DLY_SLOT 20
 #define DLY_CNT(sec) (sec * 1000 / DLY_SLOT)
@@ -77,26 +83,26 @@ static inline void fdelay(void)
 static int comm_file_read(struct comm_file *f, void *buf, int nbytes, int tmsec)
 {
 	int fd = f->fd;
-	int len = 0;
+	int len, last, n;
 	int us_cnt = DLY_CNT(tmsec);
 	char *pd = buf;
 
 	if (!f->status)
 		return 0;
 
-	while(1) {
-		char ch;
-		int cnt;
+	last = nbytes;
+	len = 0;
 
-		if (len == nbytes)
+	while(1) {
+		if (!last)
 			break;
 
-		cnt = file_getc(fd, &ch);
-		if (cnt == -1) {
-			printf("%s, read error\n", __func__);
-		} else if (cnt > 0) {
-			pd[len] = ch;
-			len++;
+		n = read(fd, &pd[len], last);
+		if (n == -1) {
+			perror("read error\n");
+		} else if (n > 0) {
+			len += n;
+			last -= n;
 		} else {
 			if (!us_cnt)
 				break;
@@ -143,7 +149,7 @@ static int comm_file_at_mid(struct comm_file *f, int offs)
 	if (!f->status)
 		return -1;
 
-	f->pos = lseek(f->fd, offs, SEEK_CUR);
+	f->pos = lseek(f->fd, offs, SEEK_SET);
 
 	DBG("%s, pos=%d\n", __func__, f->pos);
 	return f->pos;
