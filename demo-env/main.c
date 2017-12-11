@@ -5,7 +5,20 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-int scan_dir(char *name)
+void print_indent(int depth, char prefix, char *name, char postfix)
+{
+	int i;
+
+	for(i = 0; i < depth; i++)
+		printf("%c", prefix);
+
+	if (postfix)
+		printf("%s%c\n", name, postfix);
+	else
+		printf("%s\n", name);
+}
+
+int scan_dir(char *name, int depth)
 {
 	char *dn;
 	DIR *dir;
@@ -21,7 +34,7 @@ int scan_dir(char *name)
 	while(1) {
 		entry = readdir(dir);
 		if (!entry) {
-			printf("scan end\n");
+		//	printf("scan end, %d\n", depth);
 			break;
 		}
 		dn = entry->d_name;
@@ -30,10 +43,10 @@ int scan_dir(char *name)
 		}
 		lstat(dn, &ds);
 		if (S_ISDIR(ds.st_mode)) {
-			printf("%s\n", dn);
-			scan_dir(dn);
+			print_indent(depth + 4, ' ', dn, '/');
+			scan_dir(dn, depth + 4);
 		} else {
-			printf("file: %s\n", dn);
+			print_indent(depth + 4, ' ', dn, 0);
 		}
 	//	printf("dir name: %s\n", entry->d_name);
 	}
@@ -45,6 +58,13 @@ int scan_dir(char *name)
 
 int main(int argc, char *argv[])
 {
-	scan_dir("./abc");
+	char *path;
+
+	if (argc > 1)
+		path = argv[1];
+	else
+		path = "./abc";
+
+	scan_dir(path, 0);
 	return 0;
 }
