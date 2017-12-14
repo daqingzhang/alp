@@ -41,7 +41,7 @@ static int comm_file_open(struct comm_file *f, const char *path)
 		fd = open(path, flag, m);
 	}
 	if (fd < 0) {
-		perror("open file failed\n");
+		perror("open file failed");
 	}
 	f->fd = fd;
 	f->mode = m;
@@ -99,7 +99,7 @@ static int comm_file_read(struct comm_file *f, void *buf, int nbytes, int tmsec)
 
 		n = read(fd, &pd[len], last);
 		if (n == -1) {
-			perror("read error\n");
+			perror("read error");
 		} else if (n > 0) {
 			len += n;
 			last -= n;
@@ -179,9 +179,11 @@ static int comm_file_insert(struct comm_file *f, int pos, const void *buf, int n
 	return comm_file_write(f, buf, nbytes);
 }
 
-static int comm_file_init(struct comm_file *f)
+static int comm_file_init(struct comm_file *f, const char *name)
 {
 	memset(f, 0x0, sizeof(struct comm_file));
+	f->name = name;
+
 	return 0;
 }
 
@@ -194,9 +196,8 @@ struct comm_file *comm_file_create(const char *name)
 		return 0;
 	}
 
-	comm_file_init(f);
+	comm_file_init(f, name);
 
-	f->name = name;
 	f->open = comm_file_open;
 	f->close = comm_file_close;
 	f->read = comm_file_read;
