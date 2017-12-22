@@ -163,6 +163,11 @@ static island_t serial_rx_process(struct serial_obj *obj, island_t land)
 	return land;
 }
 
+static island_t serial_rst_process(struct serial_obj *obj, island_t land)
+{
+	return ISLAND_IDLE;
+}
+
 static void* serial_run(void *data)
 {
 	struct serial_obj *obj = data;
@@ -185,7 +190,7 @@ static void* serial_run(void *data)
 			land = serial_rx_process(obj, land);
 			break;
 		default:
-			land = ISLAND_IDLE;
+			land = serial_rst_process(obj, land);
 			break;
 		}
 		if (stop)
