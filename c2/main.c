@@ -148,6 +148,10 @@ int test_env(int argc, char *argv[])
 {
 	const char *penv, *pval;
 
+	printf("USER: %s\n", getenv("USER"));
+	printf("HOME: %s\n", getenv("HOME"));
+	printf("PATH: %s\n", getenv("PATH"));
+
 	if (argc > 0)
 		printf("prg name: %s\n", argv[0]);
 
