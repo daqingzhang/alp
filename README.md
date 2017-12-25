@@ -70,6 +70,16 @@ c3-2
 
 	wait();
 
+c3-3
+-------------------------------------------------------------------------------
+1. using system() to start a new process
+
+c3-4
+-------------------------------------------------------------------------------
+1. cleanup a child process asynchonously.
+The signal SIGCHLD 's action is changed for invoking wait().
+	waitpid();
+
 c4
 -------------------------------------------------------------------------------
 1. Thread creation and joining
@@ -106,10 +116,46 @@ c5
 
 c5-2
 -------------------------------------------------------------------------------
-1. socket for interprocess communication
+1. local socket for interprocess communication
 communication methead:
 	(1) pipe;
 	(2) shared memory;
 	(3) semaphore;
 	(4) socket;
+
+c5-3
+-------------------------------------------------------------------------------
+1. inet socket for interprocess communication
+There is a server that can be connected by telnet via port 1234.
+
+c5-4
+-------------------------------------------------------------------------------
+1. multiple inet sockets for interprocess communication.
+There is a server that detects two port at the same time. If any port command
+comes, server will be connected by a client(usually a telnet).
+
+demo-calc
+-------------------------------------------------------------------------------
+
+
+demo-dh
+-------------------------------------------------------------------------------
+
+demo-env
+-------------------------------------------------------------------------------
+
+demo-io
+-------------------------------------------------------------------------------
+
+demo-lib
+-------------------------------------------------------------------------------
+
+demo-signal
+-------------------------------------------------------------------------------
+
+demo-sys
+-------------------------------------------------------------------------------
+
+demo-time
+-------------------------------------------------------------------------------
 

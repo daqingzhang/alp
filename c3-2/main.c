@@ -49,7 +49,13 @@ int main(int argc, char *argv[])
 		print_pid();
 		//while(1);
 
-		// wait child to die, parent is suspended
+		/*
+		 * parent process invoke wait() to cleanup terminated child process
+		 * And wait() will make parent blocked until child is killed or exited.
+		 * If parent process dont cleanup a terminated child process, it will be
+		 * zombie process.
+		 */
+
 		child_pid = wait(&status);
 		if (WIFEXITED(status)) {
 			printf("child process %d exit normally\n", child_pid);
