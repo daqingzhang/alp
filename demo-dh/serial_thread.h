@@ -11,7 +11,7 @@
 #define SERIAL_CHAN_BUF_SIZE 0x2000
 
 struct serial_conf {
-	const char *name;
+	const char *port;
 	int  speed;
 	char data;
 	char parity;
@@ -55,7 +55,8 @@ struct serial_obj {
 	int (*open)(struct serial_obj *obj, const char *port_name);
 	void (*close)(struct serial_obj *obj);
 	int (*set_speed)(struct serial_obj *obj, int baud);
-	int (*config)(struct serial_obj *obj, int databit, char parity, int stopbit);
+	int (*config)(struct serial_obj *obj,
+			int baud, int data, char parity, int stop);
 	int (*read)(struct serial_obj *obj,
 			char *pbuf, unsigned int len, unsigned int tm_sec);
 	int (*write)(struct serial_obj *obj,

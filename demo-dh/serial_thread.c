@@ -217,7 +217,7 @@ static int serial_init(struct serial_obj *obj, const char *name)
 	prop->id = serial_obtain_id();
 	prop->name = name;
 
-	conf->name  = NULL;
+	conf->port  = NULL;
 	conf->speed = SER_CONF_DEFAULT_BAUD;
 	conf->data  = SER_CONF_DEFAULT_DATA;
 	conf->parity= SER_CONF_DEFAULT_PARITY;
@@ -236,8 +236,12 @@ static int serial_init(struct serial_obj *obj, const char *name)
 	}
 	pthread_mutex_init(&ctrl->mutex, NULL);//none re-entrant
 	pthread_attr_init(&ctrl->attr);
+	r = pthread_attr_setdetachstate(&ctrl->attr, PTHREAD_CREATE_DETACHED);
+	if (r) {
+		DBG("%s, set detach state failed %d\n", __func__, r);
+		return r;
+	}
 	ctrl->run = serial_run;
-
 	r = pthread_create(&ctrl->pid, &ctrl->attr,
 				ctrl->run, (void *)obj);
 	if (r) {
@@ -248,14 +252,15 @@ static int serial_init(struct serial_obj *obj, const char *name)
 	return 0;
 }
 
-static int serial_config(struct serial_obj *obj, int databit, char parity,
-				int stopbit)
+static int serial_config(struct serial_obj *obj, int baud, int data, char parity,
+				int stop)
 {
 	struct serial_conf *conf = obj_to_prop_conf(obj);
 
-	conf->data = databit;
+	conf->speed = baud;
+	conf->data = data;
 	conf->parity = parity;
-	conf->stop = stopbit;
+	conf->stop = stop;
 
 	// TODO: config serial
 	return 0;
@@ -275,6 +280,7 @@ static int serial_open(struct serial_obj *obj, const char *port)
 	struct serial_ctrl *ctrl = obj_to_prop_ctrl(obj);
 
 	ctrl->status = 1;
+	// TODO: config serial
 	DBG("%s %s done\n", __func__, port);
 	return 0;
 }
@@ -368,17 +374,7 @@ struct serial_obj *serial_create(const char *name)
 
 static int serial_stop_thread(struct serial_obj *obj)
 {
-	int r;
-	struct serial_ctrl *ctrl = obj_to_prop_ctrl(obj);
-
 	serial_send_stop(obj, 1);
-
-	r = pthread_join(ctrl->pid, NULL);
-	if (r) {
-		fprintf(stderr, "%s, join thread %x failed %d\n",
-			__func__, (int)(ctrl->pid), r);
-		return r;
-	}
 	return 0;
 }
 
