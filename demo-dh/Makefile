@@ -5,12 +5,13 @@ TOPDIR	:= ./
 INCS	:= -Iinclude
 INCS	+= -I$(TOPDIR)
 
-CFLAGS	:= $(INCS) -L$(TOPDIR) -O2 -g -Wall
+CFLAGS	:= $(INCS) -L$(TOPDIR) -O2 -g -Wall -Werror
 CFLAGS	+= -D_REENTRANT
 CFLAGS	+= -DDEBUG
 
 APP	:= main
-COBJS	:= island.o serial_thread.o main.o
+COBJS	:= island.o oslib.o serial_dev.o
+COBJS	+= comm_cmd.o dh_sock.o server.o
 
 all: $(APP)
 	@echo "Build $^ done !"

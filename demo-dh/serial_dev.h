@@ -1,7 +1,6 @@
-#ifndef __SERIAL_THREAD_H__
-#define __SERIAL_THREAD_H__
-#include <pthread.h>
-#include <semaphore.h>
+#ifndef __SERIAL_DEV_H__
+#define __SERIAL_DEV_H__
+#include <oslib.h>
 
 #define SER_CONF_DEFAULT_BAUD	921600
 #define SER_CONF_DEFAULT_DATA	8
@@ -50,20 +49,20 @@ struct serial_prop {
 	struct serial_chan txchan;
 };
 
-struct serial_obj {
+struct serial_dev {
 	struct serial_prop prop;
-	int (*open)(struct serial_obj *obj, const char *port_name);
-	void (*close)(struct serial_obj *obj);
-	int (*set_speed)(struct serial_obj *obj, int baud);
-	int (*config)(struct serial_obj *obj,
+	int (*open)(struct serial_dev *dev, const char *port_name);
+	void (*close)(struct serial_dev *dev);
+	int (*set_speed)(struct serial_dev *dev, int baud);
+	int (*config)(struct serial_dev *dev,
 			int baud, int data, char parity, int stop);
-	int (*read)(struct serial_obj *obj,
+	int (*read)(struct serial_dev *dev,
 			char *pbuf, unsigned int len, unsigned int tm_sec);
-	int (*write)(struct serial_obj *obj,
+	int (*write)(struct serial_dev *dev,
 			const char *pbuf, unsigned int len);
 };
 
-struct serial_obj *serial_create(const char *name);
-void serial_destroy(struct serial_obj *obj);
+struct serial_dev *serial_dev_create(const char *name);
+void serial_dev_destroy(struct serial_dev *dev);
 
 #endif /* __SERIAL_THREAD_H__ */
