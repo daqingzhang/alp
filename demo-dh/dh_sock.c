@@ -8,10 +8,9 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-#include <osdbg.h>
+#include <oslib.h>
 #include <dh_sock.h>
 #include <server.h>
-
 
 int sock_fgetc(void)
 {
@@ -23,10 +22,9 @@ int sock_puts(const char *s)
 	return 0;
 }
 
-
 static int server_run(int client_fd)
 {
-#define SERVER_BUF_SIZE 1024
+#define SERVER_BUF_SIZE 4096
 	int quit = 0;
 	int cnt, len, size;
 	char *ps;
@@ -80,30 +78,45 @@ static int server_run(int client_fd)
 	return quit;
 }
 
-int sock_start_server(void)
+struct sock_info {
+	int fd;
+	int port;
+	char *ipstr;
+	int ipval;
+	struct sockaddr_in sa;
+};
+
+struct sock_info sock_infos[] = {
+	{
+		.fd = -1,
+		.port = 1234,
+		.ipstr = "127.0.0.1",
+		.ipval = 0,
+	},
+};
+
+int server_start(void)
 {
 	int fd, quit, r;
-	struct sockaddr_in sa;
-	int port = 1234;
-	char *ipstr = "127.0.0.1";
+	struct sock_info *info = &sock_infos[0];
 
 	fd = socket(PF_INET, SOCK_STREAM, 0);
 	if (fd < 0) {
 		perror("get socket fd failed\n");
 		return -1;
 	}
-	printf("fd=%d\n", fd);
+	info->fd = fd;
 
-	sa.sin_family = AF_INET;
-	sa.sin_port = htons(port);
-	sa.sin_addr.s_addr = inet_addr(ipstr);
-
-	r = bind(fd, (const struct sockaddr *)&sa, sizeof(sa));
+	info->sa.sin_family = AF_INET;
+	info->sa.sin_port = htons(info->port);
+	info->sa.sin_addr.s_addr = inet_addr(info->ipstr);
+	r = bind(fd, (const struct sockaddr *)&info->sa, sizeof(info->sa));
 	if (r) {
 		perror("bind socket failed\n");
 		return -1;
 	}
-	printf("bind ok, ip: %s, port: %d\n", ipstr, port);
+	DBG("bind ok, fd:%d, ip:%s, port:%d\n",
+		info->fd, info->ipstr, info->port);
 
 	r = listen(fd, 5);
 	if (r) {
@@ -116,27 +129,26 @@ int sock_start_server(void)
 		struct sockaddr_in cli_sa;
 		socklen_t cli_len;
 
-		printf("wait client connection ...\n");
+		DBG("wait connection ...\n");
 		cli_fd = accept(fd, (struct sockaddr *)&cli_sa, &cli_len);
 		if (cli_fd < 0) {
 			perror("client fd error\n");
 			continue;
 		}
-		printf("client fd=%d\n", cli_fd);
+		DBG("client %d connceted\n", cli_fd);
 
 		quit = server_run(cli_fd);
-		printf("server exit\n");
 		close(cli_fd);
+		DBG("client closed\n");
 	} while(!quit);
 
 	close(fd);
 	printf("server closed\n");
-
 	return 0;
 }
 
 int main(int argc, char *argv[])
 {
-	sock_start_server();
+	server_start();
 	return 0;
 }

@@ -1,6 +1,5 @@
 #ifndef __COMM_CMD_H__
 #define __COMM_CMD_H__
-#include <osdbg.h>
 
 #define COMM_TEMP_BUF_SIZE 4096
 #define COMM_ARGV_BUF_SIZE 2048
