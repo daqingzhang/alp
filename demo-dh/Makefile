@@ -10,8 +10,12 @@ CFLAGS	+= -D_REENTRANT
 CFLAGS	+= -DDEBUG
 
 APP	:= main
-COBJS	:= island.o oslib.o serial_dev.o
-COBJS	+= comm_cmd.o dh_sock.o server.o
+COBJS	:= island.o
+COBJS	+= oslib.o
+COBJS	+= serial_thread.o
+COBJS	+= comm_cmd.o
+COBJS	+= comm_main.o
+COBJS	+= server.o
 
 all: $(APP)
 	@echo "Build $^ done !"

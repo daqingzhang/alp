@@ -33,4 +33,5 @@ int comm_exec_command(struct comm_data *d);
 int comm_cmd_register(struct comm_cmd *cmd);
 int comm_cmd_unregister(struct comm_cmd *cmd);
 
+int comm_main(int argc, char *argv[]);
 #endif

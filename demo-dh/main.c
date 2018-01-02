@@ -1,7 +1,14 @@
 #include <stdio.h>
 #include <unistd.h>
-#include <serial_dev.h>
+#include <serial_thread.h>
+#include <server.h>
 
+int main(int argc, char *argv[])
+{
+	return server_start(argc, argv);
+}
+
+#if 0
 char src[8] = {0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37};
 char dst[8] = {0};
 
@@ -46,3 +53,4 @@ int main(int argc, char *argv[])
 
 	return 0;
 }
+#endif

@@ -1,5 +1,5 @@
 #include <island.h>
-#include <serial_dev.h>
+#include <serial_thread.h>
 
 #define dev_to_prop(dev)	(&(dev->prop))
 #define dev_to_prop_conf(dev)	(&(dev->prop.conf))

@@ -1,98 +1,169 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <comm_cmd.h>
+#include <sys/socket.h>
+#include <sys/un.h>
+#include <unistd.h>
+#include <errno.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+
 #include <oslib.h>
+#include <comm_cmd.h>
+#include <server.h>
+#include <serial_thread.h>
 
-static int box_quit = 0;
+#define SERVER_BUF_SIZE 4096
 
-static void cmd_quit_handler(int id, void *cdata, void *priv)
-{
-	DBG("%s, cdata=%p, priv=%p\n", __func__, cdata, priv);
-//	exit(0);
-	box_quit = 1;
-}
+struct sock_data {
+	int server_fd;
+	int client_fd;
+	int port;
+	int ql;
+	int ipv;
+	char *ips;
+	struct sockaddr_in server_sa;
+	struct sockaddr_in client_sa;
+	socklen_t client_len;
 
-static void cmd_help_handler(int id, void *cdata, void *priv)
-{
-	DBG("%s, cdata=%p, priv=%p\n", __func__, cdata, priv);
-	comm_show_command();
-}
-
-static struct comm_cmd cmd_quit = {
-	.id = 99,
-	.name = "quit",
-	.desc = "exit the program",
-	.cdata = NULL,
-	.priv = NULL,
-	.handler = cmd_quit_handler,
+	char temp[SERVER_BUF_SIZE];
+	int tmplen;
+	int tmpsize;
 };
 
-static struct comm_cmd cmd_help = {
-	.id = 100,
-	.name = "help",
-	.desc = "show help info",
-	.cdata = NULL,
-	.priv = NULL,
-	.handler = cmd_help_handler,
+static struct sock_data sockdata = {
+	.server_fd = -1,
+	.client_fd = -1,
+	.port = 1234,
+	.ipv = 0,
+	.ips = "127.0.0.1",
+	.ql = 5,
+	.client_len = 0,
+	.tmplen = 0,
+	.tmpsize = SERVER_BUF_SIZE,
 };
 
-int trivial_cmd_register(void)
+
+int sock_getc(void)
 {
-	int r;
+	int cnt;
+	char temp = 0;
+	struct sock_data *psd = &sockdata;
 
-	r = comm_cmd_register(&cmd_quit);
-	r += comm_cmd_register(&cmd_help);
-
-	return r;
+	cnt = read(psd->client_fd, &temp, 1);
+	if (cnt < 0)
+		DBG("%s, error %d\n", __func__, cnt);
+	return temp;
 }
 
-int trivial_cmd_unregister(void)
+int sock_getc_blocked(void)
 {
-	int r;
+	int cnt;
+	char temp = 0;
+	struct sock_data *psd = &sockdata;
 
-	r = comm_cmd_unregister(&cmd_quit);
-	r += comm_cmd_unregister(&cmd_help);
-
-	return r;
+	while(1) {
+		cnt = read(psd->client_fd, &temp, 1);
+		if (cnt == 0)
+			usleep(20);
+		else if (cnt < 0)
+			DBG("%s, error %d\n", __func__, cnt);
+		else
+			break;
+	}
+	DBG("%s, temp=%2x\n", __func__, temp);
+	return temp;
 }
 
-static struct comm_data box_cdata;
-
-int comm_main(int argc, char *argv[])
+int sock_putc(char c)
 {
-	int r;
-	struct comm_data *pcd = &box_cdata;
+	struct sock_data *psd = &sockdata;
+	int cnt;
 
-	box_quit = 0;
+	cnt = write(psd->client_fd, &c, 1);
+	if (cnt != 1)
+		DBG("%s, error %d\n", __func__, cnt);
+	return c;
+}
 
-	memset((void *)pcd, 0x0, sizeof(struct comm_data));
+int sock_read(char *buf, int len)
+{
+	struct sock_data *psd = &sockdata;
+	int cnt;
 
-	comm_init_command();
-	comm_data_init(pcd);
-	comm_clear_screen();
+	cnt = read(psd->client_fd, buf, len);
+	if (cnt != len)
+		DBG("%s, error %d, len=%d\n", __func__, cnt, len);
+	return cnt;
+}
 
-	r = trivial_cmd_register();
+int sock_write(const char *buf, int len)
+{
+	struct sock_data *psd = &sockdata;
+	int cnt;
+
+	cnt = write(psd->client_fd, buf, len);
+	if (cnt != len)
+		DBG("%s, error %d\n", __func__, cnt);
+	return cnt;
+}
+
+static int server_run(int argc, char *argv[])
+{
+	return comm_main(argc, argv);
+}
+
+static int server_start(int argc, char *argv[])
+{
+	int fd, r;
+	struct sock_data *psd = &sockdata;
+
+	fd = socket(PF_INET, SOCK_STREAM, 0);
+	if (fd < 0) {
+		perror("get socket fd failed\n");
+		return -1;
+	}
+	psd->server_fd = fd;
+
+	psd->server_sa.sin_family = AF_INET;
+	psd->server_sa.sin_port = htons(psd->port);
+	psd->server_sa.sin_addr.s_addr = inet_addr(psd->ips);
+	r = bind(psd->server_fd, (const struct sockaddr *)&psd->server_sa,
+			sizeof(psd->server_sa));
 	if (r) {
-		printf("register cmd failed %d\n", r);
-		return r;
+		perror("bind socket failed\n");
+		return -1;
+	}
+	DBG("bind ok, fd:%d, ip:%s, port:%d\n",
+		psd->server_fd, psd->ips, psd->port);
+
+	r = listen(psd->server_fd, psd->ql);
+	if (r) {
+		perror("listen socket failed\n");
+		return -1;
 	}
 
-	do {
-		comm_show_screen();
-		comm_get_command(pcd);
-		comm_parse_command(pcd);
-		comm_exec_command(pcd);
-	} while (!box_quit);
+	DBG("wait connection ...\n");
+	fd = accept(psd->server_fd, (struct sockaddr *)&psd->client_sa,
+			&psd->client_len);
+	if (fd < 0)
+		perror("client fd error\n");
 
-	r = trivial_cmd_unregister();
-	if (r) {
-		printf("unregister cmd failed %d\n", r);
-		return r;
-	}
+	psd->client_fd = fd;
+	DBG("client %d connceted\n", psd->client_fd);
 
-	comm_clear_screen();
+	server_run(argc, argv);
 
-	printf("See you again.\n");
+//	close(psd->client_fd);
+//	DBG("client closed\n");
+
+	close(psd->server_fd);
+	printf("server closed\n");
 	return 0;
 }
+
+int main(int argc, char *argv[])
+{
+	return server_start(argc, argv);
+}
+

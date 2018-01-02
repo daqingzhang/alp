@@ -1,24 +1,33 @@
 #include <oslib.h>
 #include <comm_cmd.h>
-#include <dh_sock.h>
+#include <server.h>
 
 #define COMM_MAX_CMDS	100
 
 static struct comm_cmd *comm_cmds[COMM_MAX_CMDS];
 
+/*
+ * comm_fgetc() should be blocked until data come
+ */
+
 static int comm_fgetc(void)
 {
-	return sock_fgetc();
+	return sock_getc_blocked();
+}
+
+static int comm_puts(const char *s)
+{
+	return sock_write(s, strlen(s));
 }
 
 void comm_clear_screen(void)
 {
-	sock_puts("\n");
+	comm_puts("\n");
 }
 
 void comm_show_screen(void)
 {
-	sock_puts("CMD>");
+	comm_puts("CMD>");
 }
 
 void comm_show_command(void)
@@ -33,12 +42,11 @@ void comm_show_command(void)
 		if ((cmd->id < 0) || (!cmd->name))
 			continue;
 
-		sock_puts(cmd->name);
-		sock_puts("\n");
-		if (cmd->desc) {
-			sock_puts(cmd->desc);
-			sock_puts("\n");
-		}
+		comm_puts(cmd->name);
+		comm_puts(" - ");
+		if (cmd->desc)
+			comm_puts(cmd->desc);
+		comm_puts("\n");
 	}
 }
 
@@ -72,10 +80,14 @@ int comm_get_command(struct comm_data *d)
 	int c, cnt = 0;
 
 	while (1) {
-		/* comm_fgetc() should be blocked until data comm */
+		/* comm_fgetc() should be blocked until data come */
 		c = comm_fgetc();
-		if ((c == '\n') || (c == '\r')) {
-			temp[cnt++] = COMM_ASCII_EOF;
+		if ((c == '\n')) {
+			if (cnt > 0) {
+				if (temp[cnt - 1] == '\r')
+					--cnt;
+			}
+			temp[cnt] = COMM_ASCII_EOF;
 			break;
 		}
 		if (cnt >= size)
@@ -131,8 +143,10 @@ int comm_exec_command(struct comm_data *d)
 	int i;
 	char *cmd_name;
 
-	if (d->argc <= 0)
+	if (d->argc <= 0) {
+		DBG("%s, argc=0\n", __func__);
 		return -1;
+	}
 
 	cmd_name = d->argv[0];
 

@@ -1,5 +1,5 @@
-#ifndef __SERIAL_DEV_H__
-#define __SERIAL_DEV_H__
+#ifndef __SERIAL_THREAD_H__
+#define __SERIAL_THREAD_H__
 #include <oslib.h>
 
 #define SER_CONF_DEFAULT_BAUD	921600
