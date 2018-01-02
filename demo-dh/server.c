@@ -43,6 +43,10 @@ static struct sock_data sockdata = {
 	.tmpsize = SERVER_BUF_SIZE,
 };
 
+/*
+ * sock_getc - get one char from socket port
+ * return: data or 0(failed)
+ */
 
 int sock_getc(void)
 {
@@ -55,6 +59,12 @@ int sock_getc(void)
 		DBG("%s, error %d\n", __func__, cnt);
 	return temp;
 }
+
+/*
+ * sock_getc_blocked - get one char from socket port
+ * It will be blocked until required data is read.
+ * return: data or 0(failed)
+ */
 
 int sock_getc_blocked(void)
 {
@@ -75,6 +85,11 @@ int sock_getc_blocked(void)
 	return temp;
 }
 
+/*
+ * sock_putc - put one char to socket port
+ * return: data
+ */
+
 int sock_putc(char c)
 {
 	struct sock_data *psd = &sockdata;
@@ -86,6 +101,14 @@ int sock_putc(char c)
 	return c;
 }
 
+/*
+ * sock_read - read n chars from socket port
+ * param:
+ *	buf	point to a buffer of data
+ *	len	the number of data
+ * return: the number of data read from
+ */
+
 int sock_read(char *buf, int len)
 {
 	struct sock_data *psd = &sockdata;
@@ -96,6 +119,46 @@ int sock_read(char *buf, int len)
 		DBG("%s, error %d, len=%d\n", __func__, cnt, len);
 	return cnt;
 }
+
+/*
+ * sock_read_blocked - read n chars from socket port
+ * It will be blocked until required data is read.
+ * param:
+ *	buf	point to a buffer of data
+ *	len	the number of data
+ * return: the number of data read from
+ */
+
+int sock_read_blocked(char *buf, int len)
+{
+	struct sock_data *psd = &sockdata;
+	int cnt, last;
+
+	last = len;
+	while(1) {
+		if (last == 0)
+			break;
+		cnt = read(psd->client_fd, buf, last);
+		if (cnt > 0) {
+			last -= cnt;
+			buf += cnt;
+		}
+		if (cnt < 0) {
+			DBG("%s, error %d, len=%d\n", __func__, cnt, len);
+			break;
+		}
+		usleep(20);
+	}
+	return (len - last);
+}
+
+/*
+ * sock_write - write n chars to socket port
+ * param:
+ *	buf	point to a buffer of data
+ *	len	the number of data
+ * return: the number of data written to
+ */
 
 int sock_write(const char *buf, int len)
 {
@@ -166,4 +229,3 @@ int main(int argc, char *argv[])
 {
 	return server_start(argc, argv);
 }
-
