@@ -25,6 +25,8 @@ struct comm_cmd {
 
 int comm_fgetc(void);
 int comm_puts(const char *s);
+int common_cmd_register(void);
+int common_cmd_unregister(void);
 
 void comm_clear_screen(void);
 void comm_show_screen(void);

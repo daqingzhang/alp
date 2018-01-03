@@ -69,9 +69,15 @@ int comm_main(int argc, char *argv[])
 	comm_data_init(pcd);
 	comm_clear_screen();
 
+	r = common_cmd_register();
+	if (r) {
+		ioprintf("register common cmd failed %d\n", r);
+		return r;
+	}
+
 	r = trivial_cmd_register();
 	if (r) {
-		printf("register cmd failed %d\n", r);
+		ioprintf("register cmd failed %d\n", r);
 		return r;
 	}
 
@@ -84,12 +90,18 @@ int comm_main(int argc, char *argv[])
 
 	r = trivial_cmd_unregister();
 	if (r) {
-		printf("unregister cmd failed %d\n", r);
+		ioprintf("unregister cmd failed %d\n", r);
+		return r;
+	}
+
+	r = common_cmd_unregister();
+	if (r) {
+		ioprintf("unregister common cmd failed %d\n", r);
 		return r;
 	}
 
 	comm_clear_screen();
 
-	printf("See you again.\n");
+	ioprintf("See you again.\n");
 	return 0;
 }
