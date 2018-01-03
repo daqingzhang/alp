@@ -13,7 +13,7 @@ int main(int argc, const char *argv[])
 	fprintf(stdout, " this is fprintf stdout");
 	printf(" this is printf stdout");
 	printf(" this is printf stdout with end\n");
-	while(1);
+//	while(1);
 
 	printf("argc=%d\n", argc);
 	if (argc > 0) {
@@ -28,6 +28,7 @@ int main(int argc, const char *argv[])
 	n = func_add2(a,b);
 	printf("n = %d\n", n);
 
+	printf("__TIME__ = %s, __DATE__ = %s\n", __TIME__, __DATE__);
 	return 0;
 }
 
