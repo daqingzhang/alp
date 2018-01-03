@@ -1,24 +1,9 @@
-#include <oslib.h>
+#include <string.h>
 #include <comm_cmd.h>
-#include <server.h>
 
 #define COMM_MAX_CMDS	100
 
 static struct comm_cmd *comm_cmds[COMM_MAX_CMDS];
-
-/*
- * comm_fgetc() should be blocked until data come
- */
-
-static int comm_fgetc(void)
-{
-	return sock_getc_blocked();
-}
-
-static int comm_puts(const char *s)
-{
-	return sock_write(s, strlen(s));
-}
 
 void comm_clear_screen(void)
 {

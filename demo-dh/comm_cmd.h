@@ -1,5 +1,6 @@
 #ifndef __COMM_CMD_H__
 #define __COMM_CMD_H__
+#include <debug.h>
 
 #define COMM_TEMP_BUF_SIZE 4096
 #define COMM_ARGV_BUF_SIZE 2048
@@ -21,6 +22,9 @@ struct comm_cmd {
 	struct comm_data *cdata;
 	void (*handler)(int id, void *comm_data, void *priv);
 };
+
+int comm_fgetc(void);
+int comm_puts(const char *s);
 
 void comm_clear_screen(void);
 void comm_show_screen(void);

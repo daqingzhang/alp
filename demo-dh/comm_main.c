@@ -1,8 +1,5 @@
-#include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include <comm_cmd.h>
-#include <oslib.h>
 
 static int box_quit = 0;
 

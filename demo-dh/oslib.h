@@ -7,7 +7,7 @@
 #include <time.h>
 #include <pthread.h>
 #include <semaphore.h>
-#include <osdbg.h>
+#include <debug.h>
 
 int os_thread_mutex_init(pthread_mutex_t *mutex);
 int os_thread_attr_init(pthread_attr_t *attr);

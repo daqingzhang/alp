@@ -10,11 +10,8 @@ CFLAGS	+= -D_REENTRANT
 CFLAGS	+= -DDEBUG
 
 APP	:= main
-COBJS	:= island.o
-COBJS	+= oslib.o
-COBJS	+= serial_thread.o
-COBJS	+= comm_cmd.o
-COBJS	+= comm_main.o
+COBJS	:= island.o oslib.o serial_thread.o
+COBJS	+= comm_io.o comm_cmd.o comm_main.o
 COBJS	+= server.o
 
 all: $(APP)
