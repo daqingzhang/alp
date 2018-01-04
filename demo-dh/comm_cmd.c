@@ -1,4 +1,3 @@
-#include <string.h>
 #include <comm_cmd.h>
 
 #define COMM_MAX_CMDS	100

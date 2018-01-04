@@ -1,4 +1,3 @@
-#include <string.h>
 #include <comm_cmd.h>
 
 static int box_quit = 0;
@@ -69,13 +68,8 @@ int comm_main(int argc, char *argv[])
 	comm_data_init(pcd);
 	comm_clear_screen();
 
-	r = common_cmd_register();
-	if (r) {
-		ioprintf("register common cmd failed %d\n", r);
-		return r;
-	}
-
 	r = trivial_cmd_register();
+	r += user_cmd_register();
 	if (r) {
 		ioprintf("register cmd failed %d\n", r);
 		return r;
@@ -88,15 +82,10 @@ int comm_main(int argc, char *argv[])
 		comm_exec_command(pcd);
 	} while (!box_quit);
 
-	r = trivial_cmd_unregister();
+	r = user_cmd_unregister();
+	r += trivial_cmd_unregister();
 	if (r) {
 		ioprintf("unregister cmd failed %d\n", r);
-		return r;
-	}
-
-	r = common_cmd_unregister();
-	if (r) {
-		ioprintf("unregister common cmd failed %d\n", r);
 		return r;
 	}
 

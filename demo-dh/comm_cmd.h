@@ -1,10 +1,15 @@
 #ifndef __COMM_CMD_H__
 #define __COMM_CMD_H__
 #include <debug.h>
+#include <string.h>
 
 #define COMM_TEMP_BUF_SIZE 4096
 #define COMM_ARGV_BUF_SIZE 2048
 
+/*
+ * command data structure
+ ******************************************************
+ */
 struct comm_data {
 	char	temp[COMM_TEMP_BUF_SIZE];
 	char*	argv[COMM_ARGV_BUF_SIZE];
@@ -14,6 +19,10 @@ struct comm_data {
 	int 	argsize;
 };
 
+/*
+ * common command structure
+ ******************************************************
+ */
 struct comm_cmd {
 	int id;
 	char *name;
@@ -23,11 +32,19 @@ struct comm_cmd {
 	void (*handler)(int id, void *comm_data, void *priv);
 };
 
+/*
+ * common io function
+ ******************************************************
+ */
 int comm_fgetc(void);
 int comm_puts(const char *s);
-int common_cmd_register(void);
-int common_cmd_unregister(void);
+int user_cmd_register(void);
+int user_cmd_unregister(void);
 
+/*
+ * common command driver
+ ******************************************************
+ */
 void comm_clear_screen(void);
 void comm_show_screen(void);
 void comm_show_command(void);
@@ -39,5 +56,10 @@ int comm_exec_command(struct comm_data *d);
 int comm_cmd_register(struct comm_cmd *cmd);
 int comm_cmd_unregister(struct comm_cmd *cmd);
 
+/*
+ * common entry function
+ ******************************************************
+ */
 int comm_main(int argc, char *argv[]);
+
 #endif

@@ -1,6 +1,5 @@
-#include <string.h>
 #include <comm_cmd.h>
-#include <server.h>
+#include <sock_cmd.h>
 
 /*
  * comm_fgetc() should be blocked until data come
@@ -16,14 +15,18 @@ int comm_puts(const char *s)
 	return sock_write(s, strlen(s));
 }
 
-int common_cmd_register(void)
+int user_cmd_register(void)
 {
-	//TODO: register new command
-	return 0;
+	int r = 0;
+
+	r = sock_cmd_register();
+	return r;
 }
 
-int common_cmd_unregister(void)
+int user_cmd_unregister(void)
 {
-	//TODO: unregister new command
-	return 0;
+	int r = 0;
+
+	r = sock_cmd_unregister();
+	return r;
 }

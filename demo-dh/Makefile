@@ -12,7 +12,7 @@ CFLAGS	+= -DDEBUG
 APP	:= main
 COBJS	:= island.o oslib.o serial_thread.o
 COBJS	+= comm_io.o comm_cmd.o comm_main.o
-COBJS	+= server.o
+COBJS	+= sock_io.o sock_cmd.o server.o
 
 all: $(APP)
 	@echo "Build $^ done !"
