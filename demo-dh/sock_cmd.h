@@ -28,6 +28,13 @@ struct sock_data {
 	int tmpsize;
 };
 
+#define SOCK_PDATA_BUF_SIZE 1024
+struct sock_pdata {
+	int size;
+	int cnt;
+	unsigned int buf[SOCK_PDATA_BUF_SIZE];
+};
+
 /*
  * socket IO function
  ***************************************************
