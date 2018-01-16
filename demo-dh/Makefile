@@ -27,6 +27,7 @@ $(APP): $(COBJS)
 	$(CC) $(CFLAGS) -o $@ $^  -lpthread
 
 %.o:%.c
+	@echo "CC $< --> $@"
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
