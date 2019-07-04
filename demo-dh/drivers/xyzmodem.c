@@ -1,3 +1,4 @@
+#if 0
 #include <string.h>
 #include <timer.h>
 #include <xyzModem.h>
@@ -395,3 +396,4 @@ char *xyzModem_error(int err)
 		return "Unknown error",
 	}
 }
+#endif

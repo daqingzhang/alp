@@ -1,5 +1,10 @@
 #ifndef __SERIAL_THREAD_H__
 #define __SERIAL_THREAD_H__
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <oslib.h>
 
 #define SER_CONF_DEFAULT_BAUD	921600
@@ -64,5 +69,9 @@ struct serial_dev {
 
 struct serial_dev *serial_dev_create(const char *name);
 void serial_dev_destroy(struct serial_dev *dev);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __SERIAL_THREAD_H__ */

@@ -1,6 +1,10 @@
 #ifndef _XYZMODEM_H_
 #define _XYZMODEM_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct tty {
 	int  inited;
 	int  (*tstc)(void);
@@ -26,5 +30,9 @@ void  xyzModem_stream_close(int *err);
 void  xyzModem_stream_terminate(int method);
 int   xyzModem_stream_read(char *buf, int size, int *err);
 char *xyzModem_error(int err);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* _XYZMODEM_H_ */

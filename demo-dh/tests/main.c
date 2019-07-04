@@ -1,12 +1,13 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <serial_thread.h>
+#include <usb_test.h>
 
 #if 0
 char src[8] = {0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37};
 char dst[8] = {0};
 
-int main(int argc, char *argv[])
+int test_main(int argc, char *argv[])
 {
 	int r, i, cnt = 10;
 	char *name;
@@ -48,3 +49,12 @@ int main(int argc, char *argv[])
 	return 0;
 }
 #endif
+
+int test_main(int argc, char *argv[])
+{
+	printf("%s\n", __func__);
+
+	test_libusb(argc, argv);
+	return 0;
+}
+

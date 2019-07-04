@@ -1,5 +1,10 @@
 #ifndef __OSLIB_H__
 #define __OSLIB_H__
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -20,5 +25,9 @@ int os_sem_init(sem_t *sem, int pshared, unsigned int value);
 int os_sem_wait(sem_t *sem);
 int os_sem_post(sem_t *sem);
 int os_sem_timedwait(sem_t *sem, const struct timespec *abs_tm);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

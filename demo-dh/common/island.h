@@ -1,6 +1,10 @@
 #ifndef __ISLAND_H__
 #define __ISLAND_H__
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define ARRAY_SIZE(a) (sizeof((a)) / sizeof((a)[0]))
 
 #define PRICE_R0	0
@@ -38,5 +42,9 @@ struct ship_ticket {
 };
 
 island_t take_ship(island_t from, enum ticket t);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

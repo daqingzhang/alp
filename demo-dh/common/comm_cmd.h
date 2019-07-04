@@ -1,5 +1,10 @@
 #ifndef __COMM_CMD_H__
 #define __COMM_CMD_H__
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <debug.h>
 #include <string.h>
 
@@ -61,5 +66,9 @@ int comm_cmd_unregister(struct comm_cmd *cmd);
  ******************************************************
  */
 int comm_main(int argc, char *argv[]);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -1,5 +1,10 @@
 #ifndef __SOCK_CMD_H__
 #define __SOCK_CMD_H__
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/un.h>
@@ -54,5 +59,9 @@ struct sock_data *sock_get_sockdata(void);
  */
 int sock_cmd_register(void);
 int sock_cmd_unregister(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

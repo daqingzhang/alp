@@ -10,7 +10,8 @@
 *.dump
 *.list
 *.symbols
+*.*.swp
 
 tags
-main
+main*
 a.out

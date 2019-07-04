@@ -11,13 +11,16 @@
 #include <comm_cmd.h>
 #include <sock_cmd.h>
 #include <serial_thread.h>
+#ifdef TEST
+#include <test.h>
+#endif
 
-static int server_run(int argc, char *argv[])
+int server_run(int argc, char *argv[])
 {
 	return comm_main(argc, argv);
 }
 
-static int server_start(int argc, char *argv[])
+int server_start(int argc, char *argv[])
 {
 	int fd, r;
 	struct sock_data *psd = sock_get_sockdata();
@@ -68,5 +71,9 @@ static int server_start(int argc, char *argv[])
 
 int main(int argc, char *argv[])
 {
+#ifndef TEST
 	return server_start(argc, argv);
+#else
+	return test_main(argc, argv);
+#endif
 }

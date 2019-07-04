@@ -15,10 +15,19 @@ static void cmd_help_handler(int id, void *cdata, void *priv)
 	comm_show_command();
 }
 
+static struct comm_cmd cmd_exit = {
+	.id = 98,
+	.name = "exit",
+	.desc = "exit the program",
+	.cdata = NULL,
+	.priv = NULL,
+	.handler = cmd_quit_handler,
+};
+
 static struct comm_cmd cmd_quit = {
 	.id = 99,
 	.name = "quit",
-	.desc = "exit the program",
+	.desc = "quit the program",
 	.cdata = NULL,
 	.priv = NULL,
 	.handler = cmd_quit_handler,
@@ -38,6 +47,7 @@ int trivial_cmd_register(void)
 	int r;
 
 	r = comm_cmd_register(&cmd_quit);
+	r += comm_cmd_register(&cmd_exit);
 	r += comm_cmd_register(&cmd_help);
 
 	return r;
@@ -48,16 +58,16 @@ int trivial_cmd_unregister(void)
 	int r;
 
 	r = comm_cmd_unregister(&cmd_quit);
+	r += comm_cmd_register(&cmd_exit);
 	r += comm_cmd_unregister(&cmd_help);
 
 	return r;
 }
 
-static struct comm_data box_cdata;
-
 int comm_main(int argc, char *argv[])
 {
 	int r;
+	struct comm_data box_cdata;
 	struct comm_data *pcd = &box_cdata;
 
 	box_quit = 0;
