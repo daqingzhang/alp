@@ -15,6 +15,7 @@ ECHO :=
 endif
 
 obj-y	:=
+ccflags-y	:=
 sinclude config/$(T)/target.mk
 sinclude config/$(T)/config.mk
 sinclude common/config.mk
@@ -23,6 +24,8 @@ sinclude socket/config.mk
 sinclude tests/config.mk
 
 COBJS	:=$(obj-y)
+DEPS	:=$(COBJS:.o=.o.d)
+
 TOPDIR	:= $(shell pwd)
 INCS	:= -Iinclude
 INCS	+= -I$(TOPDIR) -Icommon -Idrivers -Itests -Isocket -Iconfig/$(T)
@@ -42,9 +45,13 @@ ifeq ($(DEBUG),1)
 CFLAGS	+= -DDEBUG
 endif
 
+ifneq ($(ccflags-y),)
+CFLAGS	+= $(ccflags-y)
+endif
+
 .PHONY: all clean lst
 
-all: clean $(APP)
+all: $(APP)
 	@mkdir -p $(OUTDIR)
 #	@mv -f *.map $(OUTDIR)
 	@echo "============================================"
@@ -60,13 +67,14 @@ lst: $(APP)
 	$(ECHO)$(OBJDUMP) -t $< > $(APP).sec
 
 %.o:%.cpp
-	@echo "CCP $< --> $@"
-	$(ECHO)$(CCP) $(CFLAGS) -c $< -o $@
+	@echo "C++	$@"
+	$(ECHO)$(CCP) $(CFLAGS) -MD -MF $@.d -MP -c -o $@ $<
 
 %.o:%.c
-	@echo "CC $< --> $@"
-	$(ECHO)$(CC) $(CFLAGS) -c $< -o $@
+	@echo "CC	$@"
+	$(ECHO)$(CC) $(CFLAGS) -MD -MF $@.d -MP -c -o $@ $<
 
 clean:
-	@rm -f *.o *.lst *.sym *.sec *.map *.out $(APP) $(COBJS) main-v*
+	@rm -f *.o *.lst *.sym *.sec *.map *.out $(APP) \
+		$(DEPS) $(COBJS) main-v*
 	@rm -rf $(OUTDIR)
