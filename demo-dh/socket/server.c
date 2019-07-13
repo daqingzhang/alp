@@ -39,7 +39,7 @@ int server_start(int argc, char *argv[])
 			sizeof(psd->server_sa));
 	if (r) {
 		perror("bind socket failed\n");
-		return -1;
+		goto exit;
 	}
 	DBG("bind ok, fd:%d, ip:%s, port:%d\n",
 		psd->server_fd, psd->ips, psd->port);
@@ -47,7 +47,7 @@ int server_start(int argc, char *argv[])
 	r = listen(psd->server_fd, psd->ql);
 	if (r) {
 		perror("listen socket failed\n");
-		return -1;
+		goto exit;
 	}
 
 	DBG("wait connection ...\n");
@@ -64,6 +64,8 @@ int server_start(int argc, char *argv[])
 //	close(psd->client_fd);
 //	DBG("client closed\n");
 
+exit:
+	unlink(psd->ips);
 	close(psd->server_fd);
 	printf("server closed\n");
 	return 0;

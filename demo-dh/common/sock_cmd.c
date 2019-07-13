@@ -117,6 +117,7 @@ static struct comm_cmd cmd_echo = {
 	.cdata = &cdata_sock,
 	.priv = &spdata,
 	.handler = sock_cmd_handler,
+	.nogroup = 1,
 };
 
 static struct comm_cmd cmd_md32 = {
@@ -129,6 +130,7 @@ static struct comm_cmd cmd_md32 = {
 	.cdata = &cdata_sock,
 	.priv = &spdata,
 	.handler = sock_cmd_handler,
+	.nogroup = 1,
 };
 
 static struct comm_cmd cmd_mw32 = {
@@ -140,6 +142,7 @@ static struct comm_cmd cmd_mw32 = {
 	.cdata = &cdata_sock,
 	.priv = &spdata,
 	.handler = sock_cmd_handler,
+	.nogroup = 1,
 };
 
 static struct comm_cmd cmd_mr32 = {
@@ -151,6 +154,7 @@ static struct comm_cmd cmd_mr32 = {
 	.cdata = &cdata_sock,
 	.priv = &spdata,
 	.handler = sock_cmd_handler,
+	.nogroup = 1,
 };
 
 static struct comm_cmd* sock_cmds[] = {

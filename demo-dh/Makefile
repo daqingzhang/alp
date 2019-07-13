@@ -29,7 +29,7 @@ DEPS	:=$(COBJS:.o=.o.d)
 TOPDIR	:= $(shell pwd)
 INCS	:= -Iinclude
 INCS	+= -I$(TOPDIR) -Icommon -Idrivers -Itests -Isocket -Iconfig/$(T)
-OUTDIR	:= out
+OUTDIR	:= out/$(T)
 
 GITVER	:= $(shell git log --dense --pretty=oneline -n1 | head -c8)
 APP	:= main-v$(GITVER)
@@ -52,8 +52,6 @@ endif
 .PHONY: all clean lst
 
 all: $(APP)
-	@mkdir -p $(OUTDIR)
-#	@mv -f *.map $(OUTDIR)
 	@echo "============================================"
 	@echo "Build $^ done !"
 	@echo "============================================"
@@ -73,6 +71,18 @@ lst: $(APP)
 %.o:%.c
 	@echo "CC	$@"
 	$(ECHO)$(CC) $(CFLAGS) -MD -MF $@.d -MP -c -o $@ $<
+
+odir:
+	@mkdir -p $(OUTDIR)/socket
+	@mkdir -p $(OUTDIR)/tests
+	@mkdir -p $(OUTDIR)/drivers
+	@mkdir -p $(OUTDIR)/common
+
+mvobj: odir
+	@mv socket/*.o $(OUTDIR)/socket/
+	@mv tests/*.o $(OUTDIR)/tests/
+	@mv drivers/*.o $(OUTDIR)/drivers/
+	@mv common/*.o $(OUTDIR)/common/
 
 clean:
 	@rm -f *.o *.lst *.sym *.sec *.map *.out $(APP) \

@@ -4,6 +4,7 @@
 #include <libusb-1.0/libusb.h>
 #include <usb_test.h>
 
+#if 1
 int add(int a, int c)
 {
 	return a+c;
@@ -368,4 +369,4 @@ int test_libusb(int argc, char *argv[])
 	}
 	return 0;
 }
-
+#endif

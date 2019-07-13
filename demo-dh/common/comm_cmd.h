@@ -11,6 +11,10 @@ extern "C" {
 #define COMM_TEMP_BUF_SIZE 4096
 #define COMM_ARGV_BUF_SIZE 2048
 
+#ifndef ARRAY_SIZE
+#define ARRAY_SIZE(a) (sizeof((a)) / sizeof((a)[0]))
+#endif
+
 /*
  * command data structure
  ******************************************************
@@ -31,10 +35,12 @@ struct comm_data {
 struct comm_cmd {
 	int id;
 	char *name;
+	char *group;
 	char *desc;
 	void *priv;
 	struct comm_data *cdata;
 	void (*handler)(int id, void *comm_data, void *priv);
+	int nogroup;
 };
 
 /*

@@ -22,6 +22,7 @@ static struct comm_cmd cmd_exit = {
 	.cdata = NULL,
 	.priv = NULL,
 	.handler = cmd_quit_handler,
+	.nogroup = 1,
 };
 
 static struct comm_cmd cmd_quit = {
@@ -31,6 +32,7 @@ static struct comm_cmd cmd_quit = {
 	.cdata = NULL,
 	.priv = NULL,
 	.handler = cmd_quit_handler,
+	.nogroup = 1,
 };
 
 static struct comm_cmd cmd_help = {
@@ -40,6 +42,7 @@ static struct comm_cmd cmd_help = {
 	.cdata = NULL,
 	.priv = NULL,
 	.handler = cmd_help_handler,
+	.nogroup = 1,
 };
 
 int trivial_cmd_register(void)

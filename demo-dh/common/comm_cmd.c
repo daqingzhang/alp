@@ -126,15 +126,14 @@ int comm_exec_command(struct comm_data *d)
 {
 	int i;
 	char *cmd_name;
+	char *cmd_group;
 
 	if (d->argc <= 0) {
 		DBG("%s, argc=0\n", __func__);
 		return -1;
 	}
 
-	cmd_name = d->argv[0];
-
-	DBG("%s, cmd_name:%s\n", __func__, cmd_name);
+	DBG("%s, argv[0]:%s, argv[1]:%s\n", __func__, d->argv[0], d->argv[1]);
 
 	for(i = 0;i < COMM_MAX_CMDS;i++) {
 		struct comm_cmd *cmd;
@@ -147,6 +146,18 @@ int comm_exec_command(struct comm_data *d)
 		if ((cmd->id < 0) || (!cmd->name))
 			continue;
 
+		if (cmd->nogroup == 1) {
+			cmd_name = d->argv[0];
+		} else {
+			cmd_group= d->argv[0];
+			cmd_name = d->argv[1];
+		}
+
+		if (cmd->nogroup == 0) {
+			if (strcmp(cmd_group, cmd->group)) {
+				continue;
+			}
+		}
 		if (!strcmp(cmd_name, cmd->name)) {
 			DBG("%s, cmd: %s, %d, %p, %p, %p\n", __func__,
 				cmd->name, cmd->id, cmd->handler,
@@ -156,6 +167,8 @@ int comm_exec_command(struct comm_data *d)
 				memcpy(cmd->cdata, d, sizeof(struct comm_data));
 			if (cmd->handler)
 				cmd->handler(cmd->id, (void *)(cmd->cdata), cmd->priv);
+
+			break;
 		}
 	}
 	return 0;
