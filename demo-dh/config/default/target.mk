@@ -1,2 +1,2 @@
-TEST	?=0
+TEST	?=1
 DEBUG	?=1

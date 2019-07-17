@@ -7,6 +7,7 @@ enum {
 	USB_IDX_ARGC1 = 2,
 	USB_IDX_ARGC2 = 3,
 	USB_IDX_ARGC3 = 4,
+	USB_IDX_QTY,
 };
 
 enum usb_cmd {
@@ -30,7 +31,7 @@ enum {
 };
 
 struct usb_cmd_t {
-	char *name;
+	const char *name;
 	int id;
 };
 

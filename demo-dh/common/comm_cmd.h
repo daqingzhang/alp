@@ -34,9 +34,9 @@ struct comm_data {
  */
 struct comm_cmd {
 	int id;
-	char *name;
-	char *group;
-	char *desc;
+	const char *name;
+	const char *group;
+	const char *desc;
 	void *priv;
 	struct comm_data *cdata;
 	void (*handler)(int id, void *comm_data, void *priv);

@@ -50,11 +50,14 @@ int test_main(int argc, char *argv[])
 }
 #endif
 
+int usb_cmd_test_handler(int argc, char *argv[]);
+
 int test_main(int argc, char *argv[])
 {
 	printf("%s\n", __func__);
 
-	test_libusb(argc, argv);
+//	test_libusb(argc, argv);
+	usb_cmd_test_handler(argc, argv);
 	return 0;
 }
 
