@@ -30,12 +30,20 @@ static struct cmd_hook cmd_hooks[] = {
 
 int comm_fgetc(void)
 {
+#ifdef USE_SOCKET
 	return sock_getc_blocked();
+#else
+	return fgetc(stdin);
+#endif
 }
 
 int comm_puts(const char *s)
 {
+#ifdef USB_SOCKET
 	return sock_write(s, strlen(s));
+#else
+	return printf("%s", s);
+#endif
 }
 
 int user_cmd_register(void)

@@ -1,2 +1,3 @@
-TEST	?=1
+TEST	?=0
+USE_SOCKET	?=0
 DEBUG	?=1

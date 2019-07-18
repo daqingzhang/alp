@@ -20,7 +20,7 @@ int server_run(int argc, char *argv[])
 	return comm_main(argc, argv);
 }
 
-int server_start(int argc, char *argv[])
+int server_main(int argc, char *argv[])
 {
 	int fd, r;
 	struct sock_data *psd = sock_get_sockdata();
@@ -63,7 +63,6 @@ int server_start(int argc, char *argv[])
 
 //	close(psd->client_fd);
 //	DBG("client closed\n");
-
 exit:
 	unlink(psd->ips);
 	close(psd->server_fd);
@@ -73,9 +72,11 @@ exit:
 
 int main(int argc, char *argv[])
 {
-#ifndef TEST
-	return server_start(argc, argv);
-#else
+#ifdef USE_SOCKET
+	return server_main(argc, argv);
+#elif defined(TEST)
 	return test_main(argc, argv);
+#else
+	return comm_main(argc, argv);
 #endif
 }

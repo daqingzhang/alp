@@ -45,6 +45,10 @@ ifeq ($(DEBUG),1)
 CFLAGS	+= -DDEBUG
 endif
 
+ifeq ($(USE_SOCKET),1)
+CFLAGS	+= -DUSE_SOCKET
+endif
+
 ifneq ($(ccflags-y),)
 CFLAGS	+= $(ccflags-y)
 endif
