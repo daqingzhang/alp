@@ -242,8 +242,13 @@ int comm_cmd_register(struct comm_cmd *cmd)
 	if (r)
 		return r;
 
-	DBG("register cmd: %s, %d, handler[%p]\n",
-		cmd->name, cmd->id, cmd->handler);
+	if (cmd->nogroup) {
+		DBG("register cmd: %s, %4d, handler[%p]\n",
+			cmd->name, cmd->id, cmd->handler);
+	} else {
+		DBG("register cmd: %s %s, %4d, handler[%p]\n",
+			cmd->group, cmd->name, cmd->id, cmd->handler);
+	}
 	return 0;
 }
 

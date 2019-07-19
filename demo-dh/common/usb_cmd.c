@@ -308,10 +308,6 @@ static int usb_handle_cmd_bind(int argc, char *argv[], int bind)
 	if (argc > USB_IDX_ARGC2) {
 		pid = strtoul(argv[USB_IDX_ARGC2], NULL, 0);
 	}
-	if (vid == 0 || pid == 0) {
-		USBLOG("%s, invalid vid, pid\n", __func__);
-		return -1;
-	}
 	USBLOG("%s, vid=%x, pid=%x\n", __func__, vid, pid);
 
 	if (usbctrl.bind == bind) {
@@ -320,6 +316,10 @@ static int usb_handle_cmd_bind(int argc, char *argv[], int bind)
 	}
 
 	if (bind) {
+		if (vid == 0 || pid == 0) {
+			USBLOG("%s, invalid vid, pid\n", __func__);
+			return -1;
+		}
 		r = libusb_init(NULL);
 		if (r) {
 			USBLOG("init usb failed %d", r);
@@ -350,9 +350,11 @@ static int usb_handle_cmd_bind(int argc, char *argv[], int bind)
 // usb wr [mod] [addr] [data]
 static int usb_handle_cmd_rw(int argc, char *argv[], int read)
 {
-	unsigned int addr = 0, data = 0;
+#define ANA_REG_MAX_ADDR 0x400
+
+	unsigned int addr = 0, argv3 = 1;
 	char *cmd_name = NULL;
-	int cmd_id = -1, retval = 0, i;
+	int cmd_id = -1, rlen = 0, i, err = 0;
 	uint8_t buf[8], len;
 
 	if(!usbctrl.bind) {
@@ -367,7 +369,7 @@ static int usb_handle_cmd_rw(int argc, char *argv[], int read)
 		addr = strtoul(argv[USB_IDX_ARGC2], NULL, 0);
 	}
 	if (argc > USB_IDX_ARGC3) {
-		data = strtoul(argv[USB_IDX_ARGC3], NULL, 0);
+		argv3 = strtoul(argv[USB_IDX_ARGC3], NULL, 0);
 	}
 
 	if (cmd_name == NULL) {
@@ -385,15 +387,36 @@ static int usb_handle_cmd_rw(int argc, char *argv[], int read)
 		return -3;
 	}
 	if (!read) {
+		unsigned int data = argv3;
+
+		if ((cmd_id == USB_MOD_ANA)
+			|| (cmd_id == USB_MOD_PMU)
+			|| (cmd_id == USB_MOD_DIG)
+			|| (cmd_id == USB_MOD_MEM)) {
+
+			if (argc <= USB_IDX_ARGC3) {
+				USBLOG("null data to write\n");
+				return -4;
+			}
+		}
+
 		switch(cmd_id) {
 		case USB_MOD_ANA:
 		case USB_MOD_PMU:
+			if (addr >= ANA_REG_MAX_ADDR) {
+				USBLOG("addr %x out of range 0x%x\n", addr, ANA_REG_MAX_ADDR);
+				return -3;
+			}
 			buf[0] = (data & 0xff);
 			buf[1] = (data >> 8) & 0xff;
 			len = 2;
 			break;
 		case USB_MOD_DIG:
 		case USB_MOD_MEM:
+			if (addr & 0x3) {
+				USBLOG("unaligned addr %x\n", addr);
+				return -3;
+			}
 			buf[0] = (data & 0xff);
 			buf[1] = (data >> 8) & 0xff;
 			buf[2] = (data >> 16) & 0xff;
@@ -410,32 +433,74 @@ static int usb_handle_cmd_rw(int argc, char *argv[], int read)
 			len = 4;
 			break;
 		default:
-			return -3;
+			return -5;
 		}
-		retval = usb_raw_write(usbctrl.handle, cmd_id, addr, buf, len);
+		rlen = usb_raw_write(usbctrl.handle, cmd_id, addr, buf, len);
+		if (rlen != len) {
+			USBLOG("write error, rlen=%d, len=%d\n", rlen, len);
+			err++;
+		}
 	} else {
+		unsigned int inc = 0;
+
 		switch(cmd_id) {
 		case USB_MOD_ANA:
 		case USB_MOD_PMU:
+			if (addr >= ANA_REG_MAX_ADDR) {
+				USBLOG("addr %x out of range 0x%x\n", addr, ANA_REG_MAX_ADDR);
+				return -3;
+			}
 			len = 2;
+			inc = 1;
 			break;
 		case USB_MOD_DIG:
 		case USB_MOD_MEM:
+			if (addr & 0x3) {
+				USBLOG("unaligned addr %x\n", addr);
+				return -3;
+			}
+			len = 4;
+			inc = 4;
+			break;
 		case USB_CMD_EXEC:
 		case USB_CMD_RESET:
 		case USB_CMD_RESET_CDC:
 			len = 4;
 			break;
 		default:
-			return -4;
+			return -6;
 		}
 		memset(buf, 0, sizeof(buf));
-		retval = usb_raw_read(usbctrl.handle, cmd_id, addr, buf, len);
+		unsigned int times = 0, i = 0;
+
+		if ((cmd_id == USB_MOD_ANA)
+			|| (cmd_id == USB_MOD_PMU)
+			|| (cmd_id == USB_MOD_DIG)
+			|| (cmd_id == USB_MOD_MEM)) {
+
+			times = argv3 * 4 / len;
+		}
+		for(i = 0; i < times; i++) {
+			rlen = usb_raw_read(usbctrl.handle, cmd_id, addr, buf, len);
+			if (rlen != len) {
+				USBLOG("read error, rlen=%d, len=%d\n", rlen, len);
+				err++;
+			} else {
+				unsigned int d = 0;
+
+				if (len == 4) {
+					d = buf[0] | (buf[1] << 8) | (buf[2] << 16) | (buf[3] << 24);
+				} else if (len == 2) {
+					d = buf[0] | (buf[1] << 8);
+				} else {
+					d = buf[0];
+				}
+				USBLOG("DATA: [%x] = %x\n", addr, d);
+			}
+			addr += inc;
+		}
 	}
-	if (retval == len) {
-		retval = 0;
-	}
-	return retval;
+	return err;
 }
 
 static int usb_handle_cmd_test(int argc, char *argv[])
@@ -683,6 +748,9 @@ int usb_cmd_unregister(void)
 	int i, r=0;
 	struct comm_cmd *cmd;
 
+	if (usbctrl.bind) {
+		usb_handle_cmd_bind(0, NULL, 0);
+	}
 	for(i = 0; i < ARRAY_SIZE(usb_cmds); i++) {
 		cmd = usb_cmds[i];
 		if (cmd) {

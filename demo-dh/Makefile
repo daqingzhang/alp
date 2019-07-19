@@ -49,6 +49,14 @@ ifeq ($(USE_SOCKET),1)
 CFLAGS	+= -DUSE_SOCKET
 endif
 
+ifeq ($(CMD_MODULE_USB),1)
+CFLAGS	+= -DCMD_MODULE_USB
+endif
+
+ifeq ($(CMD_MODULE_SOCK),1)
+CFLAGS	+= -DCMD_MODULE_SOCK
+endif
+
 ifneq ($(ccflags-y),)
 CFLAGS	+= $(ccflags-y)
 endif

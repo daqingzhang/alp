@@ -82,7 +82,7 @@ int comm_main(int argc, char *argv[])
 	comm_clear_screen();
 
 	r = trivial_cmd_register();
-	r += user_cmd_register();
+	r += comm_user_cmd_register();
 	if (r) {
 		ioprintf("register cmd failed %d\n", r);
 		return r;
@@ -95,7 +95,7 @@ int comm_main(int argc, char *argv[])
 		comm_exec_command(pcd);
 	} while (!box_quit);
 
-	r = user_cmd_unregister();
+	r = comm_user_cmd_unregister();
 	r += trivial_cmd_unregister();
 	if (r) {
 		ioprintf("unregister cmd failed %d\n", r);

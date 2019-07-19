@@ -43,14 +43,25 @@ struct comm_cmd {
 	int nogroup;
 };
 
+typedef int (*comm_func_t)(void);
+
+struct comm_cmd_module {
+	comm_func_t init;
+	comm_func_t exit;
+};
+
+#define CMD_MODULE(_init, _exit) \
+	{ \
+		.init = _init, \
+		.exit = _exit, \
+	}
+
 /*
  * common io function
  ******************************************************
  */
 int comm_fgetc(void);
 int comm_puts(const char *s);
-int user_cmd_register(void);
-int user_cmd_unregister(void);
 
 /*
  * common command driver
@@ -66,6 +77,8 @@ int comm_parse_command(struct comm_data *d);
 int comm_exec_command(struct comm_data *d);
 int comm_cmd_register(struct comm_cmd *cmd);
 int comm_cmd_unregister(struct comm_cmd *cmd);
+int comm_user_cmd_register(void);
+int comm_user_cmd_unregister(void);
 
 /*
  * common entry function
