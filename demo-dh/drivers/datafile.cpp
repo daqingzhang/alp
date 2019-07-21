@@ -1,14 +1,12 @@
 #include <stdio.h>
 #include <datafile.h>
+#include <debug.h>
 
 #ifdef DEBUG
-#define DFILE_TRACE printf
+#define DFILE_TRACE TRACE
 #else
 #define DFILE_TRACE(...) do{}while(0)
 #endif
-
-//#define DFILE_TRACE(...) do{ }while(0)
-#define FILE_ERR printf
 
 clsDataFile::clsDataFile()
 {

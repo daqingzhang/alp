@@ -17,7 +17,7 @@ int os_thread_create(pthread_t *pid, pthread_attr_t *attr,
 
 	r = pthread_create(pid, attr, func, data);
 	if (r) {
-		DBG("%s, create thread failed %d\n", __func__, r);
+		COMM_TRACE(0, "%s, create thread failed %d\n", __func__, r);
 		return r;
 	}
 	return 0;
@@ -34,7 +34,7 @@ int os_sem_init(sem_t *sem, int pshared, unsigned int value)
 
 	r = sem_init(sem, pshared, value);
 	if (r) {
-		DBG("%s, init sem failed %d\n", __func__, r);
+		COMM_TRACE(0, "%s, init sem failed %d\n", __func__, r);
 		return r;
 	}
 	return 0;

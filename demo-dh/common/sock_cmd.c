@@ -35,7 +35,7 @@ static int do_cmd_echo(int argc, char *argv[])
 {
 	char *ps;
 
-	DBG("%s\n", __func__);
+	SOCK_TRACE(1, "%s\n", __func__);
 
 	ps = argv[1];
 
@@ -47,19 +47,19 @@ static int do_cmd_echo(int argc, char *argv[])
 
 static int do_cmd_md(int argc, char *argv[], int size)
 {
-	DBG("%s\n", __func__);
+	SOCK_TRACE(1, "%s\n", __func__);
 	return 0;
 }
 
 static int do_cmd_mw(int argc, char *argv[], int size)
 {
-	DBG("%s\n", __func__);
+	SOCK_TRACE(1, "%s\n", __func__);
 	return 0;
 }
 
 static int do_cmd_mr(int argc, char *argv[], int size)
 {
-	DBG("%s\n", __func__);
+	SOCK_TRACE(1, "%s\n", __func__);
 	return 0;
 }
 
@@ -99,7 +99,7 @@ static void sock_cmd_handler(int id, void *cdata, void *priv)
 		break;
 	}
 	if (r)
-		ioprintf("exec cmd %d error %d\n", id, r);
+		SOCK_TRACE(0, "exec cmd %d error %d\n", id, r);
 
 	comm_data_init(pcd);
 	sock_data_init(ppd);
@@ -176,7 +176,7 @@ int sock_cmd_register(void)
 			sock_data_init(cmd->priv);
 			r = comm_cmd_register(cmd);
 			if (r) {
-				ioprintf("register cmd %s failed, %d\n",
+				SOCK_TRACE(0, "register cmd %s failed, %d\n",
 					cmd->name, r);
 				break;
 			}
@@ -195,7 +195,7 @@ int sock_cmd_unregister(void)
 		if (cmd) {
 			r = comm_cmd_unregister(cmd);
 			if (r) {
-				ioprintf("unregister cmd %s failed, %d\n",
+				SOCK_TRACE(0, "unregister cmd %s failed, %d\n",
 					cmd->name, r);
 				break;
 			}

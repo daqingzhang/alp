@@ -26,6 +26,10 @@ void comm_show_command(void)
 		if ((cmd->id < 0) || (!cmd->name))
 			continue;
 
+		if (!cmd->nogroup) {
+			comm_puts(cmd->group);
+			comm_puts(" ");
+		}
 		comm_puts(cmd->name);
 		comm_puts(" - ");
 		if (cmd->desc)
@@ -80,7 +84,7 @@ int comm_get_command(struct comm_data *d)
 	}
 	d->tmpc = cnt;
 
-	DBG("%s, temp[%p]:%s\n", __func__, temp, temp);
+	COMM_TRACE(1, "%s, temp[%p]:%s\n", __func__, temp, temp);
 	return 0;
 }
 
@@ -117,7 +121,7 @@ int comm_parse_command(struct comm_data *d)
 	}
 
 	for(i = 0; i < argi; i++)
-		DBG("%s, argc=%d, argv[%p]:%s\n", __func__,
+		COMM_TRACE(1, "%s, argc=%d, argv[%p]:%s\n", __func__,
 			d->argc, d->argv[i], d->argv[i]);
 	return r;
 }
@@ -129,11 +133,12 @@ int comm_exec_command(struct comm_data *d)
 	char *cmd_group;
 
 	if (d->argc <= 0) {
-		DBG("%s, argc=0\n", __func__);
+		COMM_TRACE(1, "%s, argc=%d\n", __func__, d->argc);
 		return -1;
 	}
 
-	DBG("%s, argv[0]:%s, argv[1]:%s\n", __func__, d->argv[0], d->argv[1]);
+	COMM_TRACE(1, "%s, argv[0]:%s, argv[1]:%s\n", __func__,
+		d->argv[0], d->argv[1]);
 
 	for(i = 0;i < COMM_MAX_CMDS;i++) {
 		struct comm_cmd *cmd;
@@ -159,7 +164,7 @@ int comm_exec_command(struct comm_data *d)
 			}
 		}
 		if (!strcmp(cmd_name, cmd->name)) {
-			DBG("%s, cmd: %s, %d, %p, %p, %p\n", __func__,
+			COMM_TRACE(1, "%s, cmd: %s, %d, %p, %p, %p\n", __func__,
 				cmd->name, cmd->id, cmd->handler,
 				cmd->cdata, cmd->priv);
 
@@ -182,16 +187,16 @@ int comm_exec_command(struct comm_data *d)
 static int comm_check_command(struct comm_cmd *cmd)
 {
 	if (!cmd) {
-		DBG("null cmd\n");
+		COMM_TRACE(0, "null cmd\n");
 		return -COMM_ERR_CMD;
 	}
 	if (cmd->id < 0) {
-		DBG("cmd id %d, should be 0 ~ %d\n",
+		COMM_TRACE(0, "cmd id %d, should be 0 ~ %d\n",
 			cmd->id, COMM_MAX_CMDS);
 		return -COMM_ERR_ID;
 	}
 	if (!cmd->name) {
-		DBG("cmd name is null\n");
+		COMM_TRACE(0, "cmd name is null\n");
 		return -COMM_ERR_NAME;
 	}
 	return 0;
@@ -243,10 +248,10 @@ int comm_cmd_register(struct comm_cmd *cmd)
 		return r;
 
 	if (cmd->nogroup) {
-		DBG("register cmd: %s, %4d, handler[%p]\n",
+		COMM_TRACE(1, "register cmd: %s, %4d, handler[%p]\n",
 			cmd->name, cmd->id, cmd->handler);
 	} else {
-		DBG("register cmd: %s %s, %4d, handler[%p]\n",
+		COMM_TRACE(1, "register cmd: %s %s, %4d, handler[%p]\n",
 			cmd->group, cmd->name, cmd->id, cmd->handler);
 	}
 	return 0;
@@ -268,7 +273,7 @@ int comm_cmd_unregister(struct comm_cmd *cmd)
 	if (r)
 		return r;
 
-	DBG("unregister cmd: %s, %d, handler[%p]\n",
+	COMM_TRACE(1, "unregister cmd: %s, %d, handler[%p]\n",
 		cmd->name, cmd->id, cmd->handler);
 	return 0;
 }

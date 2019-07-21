@@ -32,7 +32,7 @@ int sock_getc(void)
 
 	cnt = read(psd->client_fd, &temp, 1);
 	if (cnt < 0)
-		DBG("%s, error %d\n", __func__, cnt);
+		SOCK_TRACE(0, "%s, error %d\n", __func__, cnt);
 	return temp;
 }
 
@@ -50,14 +50,15 @@ int sock_getc_blocked(void)
 
 	while(1) {
 		cnt = read(psd->client_fd, &temp, 1);
-		if (cnt == 0)
+		if (cnt == 0) {
 			usleep(20);
-		else if (cnt < 0)
-			DBG("%s, error %d\n", __func__, cnt);
-		else
+		} else if (cnt < 0) {
+			SOCK_TRACE(0, "%s, error %d\n", __func__, cnt);
+		} else {
 			break;
+		}
 	}
-	DBG("%s, temp=%2x\n", __func__, temp);
+	SOCK_TRACE(1, "%s, temp=%2x\n", __func__, temp);
 	return temp;
 }
 
@@ -73,7 +74,7 @@ int sock_putc(char c)
 
 	cnt = write(psd->client_fd, &c, 1);
 	if (cnt != 1)
-		DBG("%s, error %d\n", __func__, cnt);
+		SOCK_TRACE(0, "%s, error %d\n", __func__, cnt);
 	return c;
 }
 
@@ -92,7 +93,7 @@ int sock_read(char *buf, int len)
 
 	cnt = read(psd->client_fd, buf, len);
 	if (cnt != len)
-		DBG("%s, error %d, len=%d\n", __func__, cnt, len);
+		SOCK_TRACE(0, "%s, error %d, len=%d\n", __func__, cnt, len);
 	return cnt;
 }
 
@@ -120,7 +121,7 @@ int sock_read_blocked(char *buf, int len)
 			buf += cnt;
 		}
 		if (cnt < 0) {
-			DBG("%s, error %d, len=%d\n", __func__, cnt, len);
+			SOCK_TRACE(0, "%s, error %d, len=%d\n", __func__, cnt, len);
 			break;
 		}
 		usleep(20);
@@ -143,6 +144,6 @@ int sock_write(const char *buf, int len)
 
 	cnt = write(psd->client_fd, buf, len);
 	if (cnt != len)
-		DBG("%s, error %d\n", __func__, cnt);
+		SOCK_TRACE(0, "%s, error %d\n", __func__, cnt);
 	return cnt;
 }

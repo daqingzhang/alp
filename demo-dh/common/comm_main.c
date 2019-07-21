@@ -4,14 +4,14 @@ static int box_quit = 0;
 
 static void cmd_quit_handler(int id, void *cdata, void *priv)
 {
-	DBG("%s, cdata=%p, priv=%p\n", __func__, cdata, priv);
+	COMM_TRACE(1, "%s, cdata=%p, priv=%p\n", __func__, cdata, priv);
 //	exit(0);
 	box_quit = 1;
 }
 
 static void cmd_help_handler(int id, void *cdata, void *priv)
 {
-	DBG("%s, cdata=%p, priv=%p\n", __func__, cdata, priv);
+	COMM_TRACE(1, "%s, cdata=%p, priv=%p\n", __func__, cdata, priv);
 	comm_show_command();
 }
 
@@ -84,7 +84,7 @@ int comm_main(int argc, char *argv[])
 	r = trivial_cmd_register();
 	r += comm_user_cmd_register();
 	if (r) {
-		ioprintf("register cmd failed %d\n", r);
+		COMM_TRACE(0, "register cmd failed %d\n", r);
 		return r;
 	}
 
@@ -98,12 +98,12 @@ int comm_main(int argc, char *argv[])
 	r = comm_user_cmd_unregister();
 	r += trivial_cmd_unregister();
 	if (r) {
-		ioprintf("unregister cmd failed %d\n", r);
+		COMM_TRACE(0, "unregister cmd failed %d\n", r);
 		return r;
 	}
 
 	comm_clear_screen();
 
-	ioprintf("See you again.\n");
+	COMM_TRACE(2, "See you again.\n");
 	return 0;
 }

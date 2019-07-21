@@ -51,18 +51,18 @@ static int serial_wait_rx_ready(struct serial_dev *dev, unsigned int tm_sec)
 
 	r = clock_gettime(CLOCK_REALTIME, &ts);
 	if (r) {
-		printf("get time failed %d\n", r);
+		TRACE("get time failed %d\n", r);
 		return r;
 	}
 
 	tm_sec = (tm_sec == 0) ? 1 : tm_sec;
 	ts.tv_sec += tm_sec;
-	DBG("%s, tv_sec=%d, tm_sec=%d\n", __func__,
+	TRACE("%s, tv_sec=%d, tm_sec=%d\n", __func__,
 		(unsigned int)(ts.tv_sec), tm_sec);
 
 	r = os_sem_timedwait(&ctrl->rx_ready, &ts);
 	if (r)
-		DBG("wait rx_ready error %d\n", r);
+		TRACE("wait rx_ready error %d\n", r);
 	return r;
 }
 
@@ -73,7 +73,7 @@ static int serial_wait_tx_ready(struct serial_dev *dev, unsigned int tm)
 
 	r = os_sem_wait(&ctrl->tx_ready);
 	if (r)
-		DBG("wait tx_ready error %d\n", r);
+		TRACE("wait tx_ready error %d\n", r);
 	return r;
 }
 
@@ -90,11 +90,11 @@ static island_t serial_idle_process(struct serial_dev *dev, island_t land)
 	int cmd;
 	struct serial_ctrl *ctrl = dev_to_prop_ctrl(dev);
 
-	DBG("%s wait sem\n", __func__);
+	TRACE("%s wait sem\n", __func__);
 
 	os_sem_wait(&ctrl->active);
 
-	DBG("%s wait sem done\n", __func__);
+	TRACE("%s wait sem done\n", __func__);
 
 	if (serial_is_stopped(dev))
 		return land;
@@ -114,7 +114,7 @@ static island_t serial_tx_process(struct serial_dev *dev, island_t land)
 {
 	struct serial_ctrl *ctrl = dev_to_prop_ctrl(dev);
 
-	DBG("%s tx done\n", __func__);
+	TRACE("%s tx done\n", __func__);
 	land = take_ship(land, TK_TX_TO_IDLE);
 
 #ifdef DEBUG
@@ -136,7 +136,7 @@ static island_t serial_rx_process(struct serial_dev *dev, island_t land)
 	struct serial_chan *txchan = dev_to_prop_txchan(dev);
 	char *rxbuf = rxchan->buf;
 
-	DBG("%s rx done\n", __func__);
+	TRACE("%s rx done\n", __func__);
 	land = take_ship(land, TK_RX_TO_IDLE);
 
 #ifdef DEBUG
@@ -165,7 +165,7 @@ static void* serial_run(void *data)
 	island_t land = ISLAND_IDLE;
 	volatile int stop = 0;
 
-	DBG("%s, start, data(%p)\n", __func__, data);
+	TRACE("%s, start, data(%p)\n", __func__, data);
 	while(1) {
 		switch (land) {
 		case ISLAND_IDLE:
@@ -187,7 +187,7 @@ static void* serial_run(void *data)
 		if (stop)
 			break;
 	}
-	DBG("%s, end\n", __func__);
+	TRACE("%s, end\n", __func__);
 	return 0;
 }
 
@@ -236,7 +236,7 @@ static int serial_dev_init(struct serial_dev *dev, const char *name)
 	if (r)
 		return r;
 
-	DBG("%s, dev(%p) %s inited\n", __func__, dev, name);
+	TRACE("%s, dev(%p) %s inited\n", __func__, dev, name);
 	return 0;
 }
 
@@ -269,7 +269,7 @@ static int serial_dev_open(struct serial_dev *dev, const char *port)
 
 	ctrl->status = 1;
 	// TODO: config serial
-	DBG("%s %s done\n", __func__, port);
+	TRACE("%s %s done\n", __func__, port);
 	return 0;
 }
 
@@ -280,7 +280,7 @@ static void serial_dev_close(struct serial_dev *dev)
 	if(ctrl->status) {
 //		close(ctrl->fd);
 		ctrl->status = 0;
-		DBG("%s done\n", __func__);
+		TRACE("%s done\n", __func__);
 	}
 }
 
@@ -291,7 +291,7 @@ static int serial_dev_read(struct serial_dev *dev, char *pbuf,
 	int cnt = -1;
 	struct serial_chan *rxchan = dev_to_prop_rxchan(dev);
 
-	DBG("%s %d bytes\n", __func__, len);
+	TRACE("%s %d bytes\n", __func__, len);
 
 	rxchan->cnt = 0;
 	rxchan->len = len;
@@ -315,7 +315,7 @@ static int serial_dev_write(struct serial_dev *dev, const char *pbuf,
 	int cnt = -1;
 	struct serial_chan *txchan = dev_to_prop_txchan(dev);
 
-	DBG("%s %d bytes\n", __func__, len);
+	TRACE("%s %d bytes\n", __func__, len);
 
 	txchan->cnt = 0;
 	txchan->len = len;
@@ -330,7 +330,7 @@ static int serial_dev_write(struct serial_dev *dev, const char *pbuf,
 
 void serial_dev_debug(struct serial_dev *dev)
 {
-	DBG("%s\n", __func__);
+	TRACE("%s\n", __func__);
 }
 
 struct serial_dev *serial_dev_create(const char *name)
@@ -351,11 +351,11 @@ struct serial_dev *serial_dev_create(const char *name)
 
 	r = serial_dev_init(dev, name);
 	if (r) {
-		DBG("%s, init dev failed %d\n", __func__, r);
+		TRACE("%s, init dev failed %d\n", __func__, r);
 		free(dev);
 		return 0;
 	}
-	DBG("%s, dev(%p) created\n", __func__, dev);
+	TRACE("%s, dev(%p) created\n", __func__, dev);
 	return dev;
 }
 
@@ -371,7 +371,7 @@ void serial_dev_destroy(struct serial_dev *dev)
 
 	r = os_thread_destroy(ctrl->pid, NULL);
 	if (r) {
-		DBG("%s, join thread %d failed %d\n", __func__,
+		TRACE("%s, join thread %d failed %d\n", __func__,
 			(int)(ctrl->pid), r);
 		return;
 	}
@@ -379,6 +379,6 @@ void serial_dev_destroy(struct serial_dev *dev)
 	if (dev->close)
 		dev->close(dev);
 
-	DBG("%s, dev(%p) deleted\n", __func__, dev);
+	TRACE("%s, dev(%p) deleted\n", __func__, dev);
 	free(dev);
 }

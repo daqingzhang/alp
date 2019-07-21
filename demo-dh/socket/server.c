@@ -41,7 +41,7 @@ int server_main(int argc, char *argv[])
 		perror("bind socket failed\n");
 		goto exit;
 	}
-	DBG("bind ok, fd:%d, ip:%s, port:%d\n",
+	SOCK_TRACE(2, "bind ok, fd:%d, ip:%s, port:%d\n",
 		psd->server_fd, psd->ips, psd->port);
 
 	r = listen(psd->server_fd, psd->ql);
@@ -50,23 +50,23 @@ int server_main(int argc, char *argv[])
 		goto exit;
 	}
 
-	DBG("wait connection ...\n");
+	SOCK_TRACE(2, "wait connection ...\n");
 	fd = accept(psd->server_fd, (struct sockaddr *)&psd->client_sa,
 			&psd->client_len);
 	if (fd < 0)
 		perror("client fd error\n");
 
 	psd->client_fd = fd;
-	DBG("client %d connceted\n", psd->client_fd);
+	SOCK_TRACE(2, "client %d connceted\n", psd->client_fd);
 
 	server_run(argc, argv);
 
 //	close(psd->client_fd);
-//	DBG("client closed\n");
+//	SOCK_TRACE("client closed\n");
 exit:
 	unlink(psd->ips);
 	close(psd->server_fd);
-	printf("server closed\n");
+	SOCK_TRACE(2, "server closed\n");
 	return 0;
 }
 
