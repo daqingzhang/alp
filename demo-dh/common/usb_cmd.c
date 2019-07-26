@@ -57,6 +57,7 @@ static struct usb_cmd_t fm_sub_cmds[] = {
 	{"band",    USB_FM_CMD_BAND},
 	{"device",  USB_FM_CMD_DEVICE},
 	{"test",    USB_FM_CMD_TEST},
+	{"mute",    USB_FM_CMD_MUTE},
 };
 
 #define REQ_TYPE_OTH_WR (LIBUSB_ENDPOINT_OUT \
@@ -585,6 +586,27 @@ int usb_fm_cmd_power(int on)
 	return err;
 }
 
+int usb_fm_cmd_mute(uint16_t *mute, int set)
+{
+	uint16_t m = 0;
+	uint8_t err = 0;
+
+	//*handle, type, request, wValue, wIndex, wLength, *pbuf
+	if (set) {
+		m = *mute & 0x03;
+		usb_fm_raw_xfer(usbctrl.handle, REQ_TYPE_DEV_RD,
+			USB_FM_PRIMITIVE_SET, USB_FM_SET_MUTE, m, 1, &err);
+	} else {
+		usb_fm_raw_xfer(usbctrl.handle, REQ_TYPE_DEV_RD,
+			USB_FM_PRIMITIVE_SET, USB_FM_GET_MUTE_STATE, 0, 2, (uint8_t *)&m);
+		if (mute)
+			*mute = m;
+	}
+	USB_TRACE(2, "%s, mute=%d\n", __func__, m);
+	return err;
+}
+
+
 int usb_fm_cmd_band(uint16_t *band, int set)
 {
 	uint16_t b = 0;
@@ -659,6 +681,8 @@ int usb_fm_cmd_test(void)
 	uint16_t devid = 0;
 	uint16_t chan = 10390, vol = 8, band = 0;
 
+	chan = 9740; //9150
+
 	usb_fm_cmd_get_device(&devid);
 	usleep(10*1000);
 	usb_fm_cmd_power(1);
@@ -708,6 +732,7 @@ static int usb_handle_cmd_fm(int argc, char *argv[])
 	uint16_t chan = 0, vol = 0;
 	uint16_t band = 0;
 	uint16_t dev_id = 0;
+	uint16_t mute = 0;
 
 	switch(id) {
 	case USB_FM_CMD_POWER_ON:
@@ -733,6 +758,12 @@ static int usb_handle_cmd_fm(int argc, char *argv[])
 			band = arg;
 		}
 		r = usb_fm_cmd_band(&band, is_set);
+		break;
+	case USB_FM_CMD_MUTE:
+		if (is_set) {
+			mute = arg;
+		}
+		r = usb_fm_cmd_mute(&mute, is_set);
 		break;
 	case USB_FM_CMD_DEVICE:
 		r = usb_fm_cmd_get_device(&dev_id);
@@ -998,6 +1029,8 @@ static struct comm_cmd usb_cmd_fm = {
 			"    usb fm volume        - get volume\n"
 			"    usb fm volume 8      - set volume to 8\n"
 			"    usb fm test          - test device\n"
+			"    usb fm mute          - get mute state\n"
+			"    usb fm mute 1        - set mute state 1\n"
 			"\n",
 	.cdata = &cdata_usb,
 	.priv  = &usbctrl,

@@ -69,7 +69,7 @@ all: $(APP)
 	@echo "============================================"
 
 $(APP): $(COBJS)
-	$(ECHO)$(CCP) $(CFLAGS) -o $@ $^  -lpthread -lusb-1.0
+	$(ECHO)$(CCP) $(CFLAGS) -o $@ $^  -lpthread -lusb-1.0 -lcurses
 
 lst: $(APP)
 	$(ECHO)$(OBJDUMP) -d $< > $(APP).lst

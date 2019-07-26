@@ -40,6 +40,7 @@ enum {
 	USB_FM_CMD_BAND,
 	USB_FM_CMD_DEVICE,
 	USB_FM_CMD_TEST,
+	USB_FM_CMD_MUTE,
 };
 
 struct usb_cmd_t {

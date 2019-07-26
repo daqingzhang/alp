@@ -52,12 +52,80 @@ int test_main(int argc, char *argv[])
 
 int usb_cmd_test_handler(int argc, char *argv[]);
 
+#include <curses.h>
+enum arrow_key{
+	AK_UP,
+	AK_DOWN,
+	AK_RIGHT,
+	AK_LEFT,
+
+	AK_QTY,
+};
+
+#define AK_SIZE 3
+char arrow_key_val[AK_QTY][3] = {
+	{0x1b, 0x5b, 0x41},
+	{0x1b, 0x5b, 0x42},
+	{0x1b, 0x5b, 0x43},
+	{0x1b, 0x5b, 0x44},
+};
+
+int akey_match(char *buf, int cnt)
+{
+	int i, j, k = -1;
+	char *key;
+
+	if (cnt < AK_SIZE) {
+		return k;
+	}
+	cnt /= AK_SIZE;
+
+	for(i = 0; i < AK_QTY; i++) {
+		key = &arrow_key_val[i][0];
+		for(j = 0; j < cnt; j += AK_SIZE) {
+			if ((buf[j] == key[0])
+				&& (buf[j+1] == key[1])
+				&& (buf[j+2] == key[2])) {
+					k = i;
+					break;
+			}
+		}
+	}
+	return k;
+}
+
+void test1(void)
+{
+	char ch, buf[100];
+	int i = 0, j = 0;
+	int k;
+
+	printf("CMD>\n");
+	initscr();
+	do {
+		ch = getch();
+		buf[j++] = ch;
+		k =akey_match(buf, j);
+
+		if (ch == 0xa) {
+			break;
+		}
+	} while(1);
+	endwin();
+
+	for(i = 0; i < j; i++) {
+		printf("buf[%d] = %x\n", i, buf[i]);
+	}
+	printf("k=%d\n", k);
+}
+
 int test_main(int argc, char *argv[])
 {
 	printf("%s\n", __func__);
 
 //	test_libusb(argc, argv);
-	usb_cmd_test_handler(argc, argv);
+//	usb_cmd_test_handler(argc, argv);
+	test1();
 	return 0;
 }
 
