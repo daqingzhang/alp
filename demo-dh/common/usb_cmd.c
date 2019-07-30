@@ -7,6 +7,11 @@
 #include <usb_cmd.h>
 #include <comm_cmd.h>
 
+#define USB_CMD_GROUP_NAME "usb"
+
+#define BIND_DEF_VID 0xBE57
+#define BIND_DEF_PID 0x0238
+
 struct usb_message {
 	struct libusb_control_setup b;
 	uint8_t  *data;
@@ -23,8 +28,6 @@ struct usb_ctrl_t {
 static struct usb_ctrl_t usbctrl;
 
 static struct comm_data cdata_usb;
-
-#define USB_CMD_GROUP_NAME "usb"
 
 static struct usb_cmd_t cmds_info[] = {
 	{"list", USB_CMD_LIST},
@@ -333,7 +336,7 @@ static int usb_handle_cmd_list(int argc, char *argv[], int level)
 static int usb_handle_cmd_bind(int argc, char *argv[], int bind)
 {
 	int r;
-	uint16_t vid = 0, pid = 0;
+	uint16_t vid = BIND_DEF_VID, pid = BIND_DEF_PID;
 	libusb_device_handle *handle = NULL;
 
 	if (argc > USB_IDX_ARGC1) {
